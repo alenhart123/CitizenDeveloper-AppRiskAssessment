@@ -1,20 +1,30 @@
-
 {
   "auth": {
     "identityProviders": {
       "azureActiveDirectory": {
         "registration": {
           "openIdIssuer": "https://login.microsoftonline.com/7ebf3a40-0f86-495e-98d7-20b5bad7d2ac/v2.0",
-          "clientIdSettingName": "2552a8b6-3ae6-4918-b40e-e4fe2128e10a",
-          "clientSecretSettingName": "3Y08Q~RGxUACGBvgxnwDEzc2iQM4wS5m~kBpdbXH"
+          "clientIdSettingName": "AZURE_CLIENT_ID",
+          "clientSecretSettingName": "AZURE_CLIENT_SECRET"
         }
       }
     }
   },
   "routes": [
     {
+      "route": "/.auth/*",
+      "allowedRoles": ["anonymous", "authenticated"]
+    },
+    {
       "route": "/*",
       "allowedRoles": ["authenticated"]
     }
-  ]
+  ],
+  "responseOverrides": {
+    "401": {
+      "statusCode": 302,
+      "redirect": "/.auth/login/aad"
+    }
+  }
 }
+
