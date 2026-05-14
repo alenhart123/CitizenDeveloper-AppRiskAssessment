@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Citizen Developer App Risk Assessment — William Blair CTS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #004165; --blue: #007AC9; --teal: #3F859E; --sky: #3DB7E4;
+    --pale: #C2DEEA; --charcoal: #48484A; --gray: #9A9B9C; --light: #F4F7FA; --white: #FFFFFF;
+    --t1: #0F6E56;   --t1-bg: #E1F5EE;  --t1-border: #5DCAA5;
+    --t2: #185FA5;   --t2-bg: #E6F1FB;  --t2-border: #85B7EB;
+    --t3: #534AB7;   --t3-bg: #EEEDFE;  --t3-border: #AFA9EC;
+    --red: #A32D2D;  --red-bg: #FCEBEB; --red-border: #F09595;
+    --amber: #633806; --amber-bg: #FAEEDA; --amber-border: #FAC775;
+    --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--light); color: var(--charcoal); min-height: 100vh; font-size: 14px; line-height: 1.6; }
+  header { background: var(--navy); color: var(--white); padding: 0; }
+  .header-inner { max-width: 1100px; margin: 0 auto; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  .header-brand { display: flex; align-items: center; gap: 16px; }
+  .wb-mark { width: 36px; height: 36px; background: var(--blue); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--white); flex-shrink: 0; }
+  .header-title { font-size: 15px; font-weight: 500; color: var(--white); line-height: 1.2; }
+  .header-sub { font-size: 12px; color: var(--pale); margin-top: 2px; font-weight: 300; }
+  .header-badge { font-family: var(--mono); font-size: 10px; color: var(--pale); border: 1px solid rgba(194,222,234,.3); padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+  .progress-bar-wrap { background: rgba(255,255,255,.1); height: 3px; }
+  .progress-bar-fill { height: 3px; background: var(--sky); transition: width .4s ease; width: 0%; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 32px 32px 64px; display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+  .intro { grid-column: 1 / -1; background: var(--white); border: 1px solid #e0e7ef; border-radius: 10px; padding: 20px 24px; display: flex; align-items: flex-start; gap: 16px; }
+  .intro-icon { width: 36px; height: 36px; background: var(--pale); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .intro-icon svg { width: 18px; height: 18px; }
+  .intro-text p { font-size: 13px; color: var(--charcoal); line-height: 1.65; }
+  .intro-text strong { font-weight: 600; color: var(--navy); }
+  .questions-panel { background: var(--white); border: 1px solid #e0e7ef; border-radius: 10px; overflow: hidden; }
+  .panel-header { padding: 16px 24px; border-bottom: 1px solid #e0e7ef; display: flex; align-items: center; justify-content: space-between; }
+  .panel-header-title { font-size: 12px; font-weight: 600; color: var(--navy); text-transform: uppercase; letter-spacing: .06em; }
+  .q-count { font-family: var(--mono); font-size: 11px; color: var(--gray); }
+  .question { padding: 18px 24px; border-bottom: 1px solid #f0f4f8; transition: background .15s; }
+  .question:last-child { border-bottom: none; }
+  .question.answered { background: #fafcff; }
+  .q-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+  .q-num { font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--gray); background: var(--light); border: 1px solid #e0e7ef; border-radius: 4px; padding: 2px 6px; margin-top: 1px; flex-shrink: 0; }
+  .question.answered .q-num { background: var(--navy); color: var(--white); border-color: var(--navy); }
+  .q-label { font-size: 13px; font-weight: 500; color: var(--navy); line-height: 1.4; }
+  .q-hint { font-size: 11px; color: var(--gray); margin: 2px 0 0 36px; font-weight: 300; }
+  .q-chevron { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--gray); flex-shrink: 0; margin-left: auto; transition: transform .2s; border: none; background: none; padding: 0; font-size: 14px; line-height: 1; }
+  .q-chevron.collapsed { transform: rotate(-90deg); }
+  .q-summary { font-size: 11px; color: var(--blue); margin: 2px 0 0 36px; font-weight: 500; display: none; }
+  .question.collapsed .q-summary { display: block; }
+  .question.collapsed .q-hint { display: none; }
+  .question.collapsed .options { display: none; }
+  .options { display: flex; flex-direction: column; gap: 6px; margin-left: 36px; }
+  .opt { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; border: 1px solid #e0e7ef; border-radius: 7px; cursor: pointer; transition: all .15s; background: var(--white); text-align: left; width: 100%; font-family: var(--font); }
+  .opt:hover { border-color: var(--blue); background: #f0f7ff; }
+  .opt-radio { width: 14px; height: 14px; border: 1.5px solid #c5d2dc; border-radius: 50%; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
+  .opt-radio-inner { width: 6px; height: 6px; border-radius: 50%; background: transparent; }
+  .opt-body { flex: 1; }
+  .opt-text { font-size: 13px; color: var(--charcoal); line-height: 1.4; }
+  .opt-detail { font-size: 11px; color: var(--gray); margin-top: 2px; font-weight: 300; }
+  .opt-score { font-family: var(--mono); font-size: 10px; color: var(--gray); background: var(--light); border: 1px solid #e0e7ef; border-radius: 4px; padding: 1px 5px; flex-shrink: 0; margin-top: 2px; }
+  .opt.sel { border-color: var(--blue); background: #f0f7ff; }
+  .opt.sel .opt-radio { border-color: var(--blue); }
+  .opt.sel .opt-radio-inner { background: var(--blue); }
+  .opt.sel .opt-text { color: var(--navy); font-weight: 500; }
+  .opt.sel .opt-score { background: var(--blue); color: var(--white); border-color: var(--blue); }
+  .opt.flag-sel { border-color: var(--red); background: #fff5f5; }
+  .opt.flag-sel .opt-radio { border-color: var(--red); }
+  .opt.flag-sel .opt-radio-inner { background: var(--red); }
+  .opt.flag-sel .opt-text { color: var(--red); font-weight: 500; }
+  .opt.flag-sel .opt-score { background: var(--red); color: var(--white); border-color: var(--red); }
+  .result-panel { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .controls-body { padding: 16px 20px; max-height: 60vh; overflow-y: auto; }
+  .controls-body::-webkit-scrollbar { width: 4px; }
+  .controls-body::-webkit-scrollbar-track { background: transparent; }
+  .controls-body::-webkit-scrollbar-thumb { background: var(--color-border-secondary); border-radius: 2px; }
+  .score-card { background: var(--white); border: 1px solid #e0e7ef; border-radius: 10px; overflow: hidden; }
+  .score-header { padding: 14px 20px; border-bottom: 1px solid #e0e7ef; }
+  .score-header-title { font-size: 12px; font-weight: 600; color: var(--navy); text-transform: uppercase; letter-spacing: .06em; }
+  .score-body { padding: 20px; }
+  .score-empty { font-size: 13px; color: var(--gray); text-align: center; padding: 12px 0; font-weight: 300; }
+  .tier-badge { border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; border: 1.5px solid; transition: all .3s; }
+  .tier-badge-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+  .tier-badge-name { font-size: 16px; font-weight: 600; margin-bottom: 6px; line-height: 1.2; }
+  .tier-badge-desc { font-size: 12px; line-height: 1.55; font-weight: 300; }
+  .meter-wrap { margin-bottom: 16px; }
+  .meter-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--gray); margin-bottom: 6px; }
+  .meter-track { height: 6px; background: var(--light); border-radius: 3px; overflow: hidden; border: 1px solid #e0e7ef; }
+  .meter-fill { height: 100%; border-radius: 3px; transition: width .4s ease, background .3s; }
+  .meter-segs { display: flex; gap: 3px; margin-top: 4px; }
+  .meter-seg { flex: 1; height: 3px; border-radius: 2px; transition: background .3s; }
+  .flags-section { margin-bottom: 14px; }
+  .flag-item { background: var(--red-bg); border: 1px solid var(--red-border); border-radius: 7px; padding: 10px 12px; margin-bottom: 6px; }
+  .flag-title { font-size: 11px; font-weight: 600; color: var(--red); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
+  .flag-text { font-size: 12px; color: #791F1F; line-height: 1.5; font-weight: 300; }
+  .it-review-item { background: var(--amber-bg); border: 1px solid var(--amber-border); border-radius: 7px; padding: 10px 12px; margin-bottom: 14px; }
+  .it-review-item .flag-title { color: var(--amber); }
+  .it-review-item .flag-text { color: #4A2800; }
+  .controls-card { background: var(--white); border: 1px solid #e0e7ef; border-radius: 10px; overflow: hidden; }
+  .controls-header { padding: 14px 20px; border-bottom: 1px solid #e0e7ef; display: flex; align-items: center; justify-content: space-between; }
+  .controls-header-title { font-size: 12px; font-weight: 600; color: var(--navy); text-transform: uppercase; letter-spacing: .06em; }
+
+  .raci-derived { margin-bottom: 16px; border: 1px solid #e0e7ef; border-radius: 7px; overflow: hidden; }
+  .raci-derived-item { display: flex; gap: 10px; padding: 9px 12px; border-bottom: 1px solid #f0f4f8; font-size: 12px; line-height: 1.5; }
+  .raci-derived-item:last-child { border-bottom: none; }
+  .raci-derived-label { font-weight: 600; color: var(--navy); flex-shrink: 0; min-width: 80px; }
+  .raci-derived-val { color: var(--charcoal); }
+  .raci-group { margin-bottom: 12px; border-radius: 7px; overflow: hidden; border: 1px solid #e0e7ef; }
+  .raci-group-header { padding: 8px 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+  .raci-group-header:hover { opacity: 0.85; }
+  .raci-group-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  .raci-group-body { background: var(--white); }
+  .raci-group-body.collapsed { display: none; }
+  .raci-chevron { font-size: 11px; opacity: 0.6; transition: transform .2s; }
+  .raci-chevron.collapsed { transform: rotate(-90deg); }
+  .raci-item { display: flex; gap: 10px; align-items: flex-start; padding: 7px 12px; border-bottom: 1px solid #f5f7fa; font-size: 12px; }
+  .raci-item:last-child { border-bottom: none; }
+  .raci-phase { font-family: var(--mono); font-size: 9px; font-weight: 500; padding: 2px 6px; border-radius: 3px; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
+  .raci-text { color: var(--charcoal); line-height: 1.5; }
+  .raci-tool-banner { font-size: 11px; font-weight: 600; color: var(--amber); background: var(--amber-bg); border: 1px solid var(--amber-border); border-radius: 6px; padding: 6px 10px; margin-top: 6px; text-align: center; }
+  .actions-card { background: var(--white); border: 1px solid #e0e7ef; border-radius: 10px; padding: 16px 20px; }
+  .actions-title { font-size: 12px; font-weight: 600; color: var(--navy); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
+  .action-btn { display: block; width: 100%; padding: 10px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; font-family: var(--font); cursor: pointer; border: none; text-align: left; margin-bottom: 8px; transition: all .15s; }
+  .action-btn:last-child { margin-bottom: 0; }
+  .btn-primary { background: var(--navy); color: var(--white); }
+  .btn-primary:hover { background: #005580; }
+  .btn-secondary { background: var(--light); color: var(--navy); border: 1px solid #e0e7ef; }
+  .btn-secondary:hover { background: #e8eef5; }
+  .btn-ghost { background: transparent; color: var(--gray); border: 1px solid #e0e7ef; font-size: 12px; }
+  .btn-ghost:hover { background: var(--light); color: var(--charcoal); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .animate-in { animation: fadeIn .25s ease forwards; }
+  @media print {
+    body { background: white; }
+    header { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { grid-template-columns: 1fr 1fr; padding: 16px; gap: 16px; }
+    .result-panel { position: static; }
+    .actions-card, .intro, .progress-bar-wrap { display: none; }
+    .opt-score { display: none; }
+  }
+  @media (max-width: 800px) { .page { grid-template-columns: 1fr; } .result-panel { position: static; } .header-badge { display: none; } }
+
+  /* ── Shared hub navigation ── */
+  .hub-nav {
+    background: #004165;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .hub-nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #fff;
+    font-family: Cambria, 'Times New Roman', serif;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.9;
+    transition: opacity 0.15s;
+    flex-shrink: 0;
+  }
+  .hub-nav-logo:hover { opacity: 1; }
+  .hub-nav-dots { display: flex; align-items: center; gap: 2px; }
+  .hub-nav-dots .d1 { width: 7px; height: 7px; border-radius: 50%; background: #3DB7E4; display: block; }
+  .hub-nav-dots .d2 { width: 5px; height: 5px; border-radius: 50%; background: #C2DEEA; opacity: 0.7; display: block; margin-left: -1px; }
+  .hub-nav-rule { width: 1px; height: 18px; background: rgba(255,255,255,0.25); margin: 0 2px; }
+  .hub-nav-tool {
+    font-family: Cambria, 'Times New Roman', serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #C2DEEA;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .hub-nav-badge {
+    font-size: 10px;
+    color: #C2DEEA;
+    border: 1px solid rgba(194,222,234,0.3);
+    padding: 2px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    font-family: Cambria, 'Times New Roman', serif;
+    opacity: 0.8;
+  }
+</style>
+</head>
+<nav class="hub-nav">
+  <a href="index.html" class="hub-nav-logo">
+  <img src="data:image/png;base64,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" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;" alt="William Blair"/>
+  <div class="hub-nav-rule"></div>
+  <span>Citizen Dev Hub</span>
+</a>
+  <span class="hub-nav-tool">App Risk Assessment</span>
+  <span class="hub-nav-badge">Internal Use Only</span>
+</nav>
+<header>
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="wb-mark">WB</div>
+      <div>
+        <div class="header-title">Citizen Developer App Risk Assessment</div>
+        <div class="header-sub">Central Technology Services — Governance Framework</div>
+      </div>
+    </div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+</header>
+
+<div class="page">
+  <div class="intro">
+    <div class="intro-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#004165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <div class="intro-text">
+      <p><strong>How to use this tool:</strong> Answer all five questions about the app you want to deploy. The assessment scores each answer and derives the appropriate governance tier. The tier determines the required approval chain, controls, and hosting requirements. <strong>This assessment must be submitted to IT before any app is distributed beyond its original creator.</strong></p>
+    </div>
+  </div>
+
+  <div class="questions-panel">
+    <div class="panel-header">
+      <div class="panel-header-title">App Characteristics</div>
+      <div class="q-count" id="q-count">0 of 6 answered</div>
+    </div>
+    <div id="questions-container"></div>
+  </div>
+
+  <div class="result-panel">
+    <div class="actions-card" id="actions-card" style="display:none">
+      <div class="actions-title">Actions</div>
+      <button class="action-btn btn-primary" onclick="printReport()">Print / Save as PDF</button>
+      <button class="action-btn btn-secondary" onclick="copyResults()">Copy results summary</button>
+      <button class="action-btn btn-ghost" onclick="resetAll()">Start over</button>
+    </div>
+    <div class="score-card">
+      <div class="score-header"><div class="score-header-title">Risk Assessment</div></div>
+      <div class="score-body" id="score-body"><div class="score-empty">Answer the questions on the left to see your tier assignment.</div></div>
+    </div>
+    <div class="controls-card" id="controls-card" style="display:none">
+      <div class="controls-header">
+        <div class="controls-header-title">Required Controls</div>
+        <div id="controls-tier-badge"></div>
+      </div>
+      <div class="controls-body" id="controls-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    id: 'data', label: 'What data does this app access or produce?',
+    hint: 'Select the highest classification that applies. If multiple data types are combined, the highest governs.',
+    options: [
+      { val: '1', score: 0, text: 'Public', detail: 'Approved for external disclosure with no risk to the firm, clients, or employees. Examples: public website content, press releases, published research, marketing materials.' },
+      { val: '2', score: 1, text: 'Internal', detail: 'For use within William Blair only. Unauthorized external disclosure may cause limited harm. Examples: internal emails, policy documents, process documentation, non-sensitive technical documentation.' },
+      { val: '3', score: 2, text: 'Confidential', detail: 'Sensitive business or client information. Unauthorized disclosure could cause material harm. Examples: contracts, trading information, investment committee materials, marketing strategy, credentials.' },
+      { val: '4', score: 4, text: 'Restricted', detail: 'Highest sensitivity. Disclosure could result in severe legal, regulatory, or financial consequences. Examples: employee HR records, board materials, investor PII and banking information, proprietary source code, admin credentials.', flag: true },
+    ]
+  },
+  {
+    id: 'audience', label: 'How many people will use this app?',
+    hint: 'Count all intended users, not just the current pilot group.',
+    options: [
+      { val: '1', score: 0, text: '1\u20135 people, self-organized', detail: 'The maker and a small group who all know and support each other.' },
+      { val: '2', score: 1, text: 'A defined team or workgroup (6\u201320)', detail: 'A named team with a clear scope and manager oversight.' },
+      { val: '3', score: 3, text: 'Department-wide or firm-wide (20+)', detail: 'Any broad or open-ended distribution across the firm.' },
+    ]
+  },
+  {
+    id: 'support', label: 'What level of support is expected for this app?',
+    hint: 'Focus on app support, not hosting. IT hosting is standard at Tier 3 and does not change this answer.',
+    options: [
+      { val: '1', score: 0, text: 'Self-supported by the maker \u2014 no IT involvement', detail: 'The maker maintains and updates the app. Users understand there is no formal support or SLA.' },
+      { val: '2', score: 1, text: 'Team-supported with informal expectations', detail: 'The owner and team maintain it. No formal SLA but users have reasonable expectations of availability.' },
+      { val: '3', score: 2, text: 'IT hosts the app, owner maintains app logic and content', detail: 'IT provides infrastructure and hosting (standard at Tier 3). The owner is still responsible for updating content, logic, and responding to issues within 5 business days.' },
+      { val: '4', score: 0, text: 'IT expected to maintain the app code and handle change requests', detail: 'The business expects IT to fix bugs, develop new features, and own the codebase. This is a Lane 5 app \u2014 submit as an IT development request through your BU or SRG IT lead, not through the citizen developer process.', lane5: true },
+    ]
+  },
+  {
+    id: 'integration', label: 'How does this app connect to data or services?',
+    hint: 'Select based on the nature of the connection, not the complexity. If the data is internal firm data accessed directly without an IT-managed interface, select option 5 or 6.',
+    options: [
+      { val: '1', score: 0, text: 'Fully self-contained \u2014 no external connections', detail: 'All logic and data is bundled inside the app. No calls to external services, APIs, or live data sources.' },
+      { val: '2', score: 1, text: 'Internal M365 data only', detail: 'App reads from SharePoint, OneDrive, Teams, or other M365 services via Graph API. No external or non-M365 connections.' },
+      { val: '3', score: 2, text: 'Approved MCP server or pre-approved connector', detail: 'App uses an IT-provisioned MCP server or pre-approved connector to access data through a controlled, audited interface.' },
+      { val: '4', score: 2, text: 'External third-party APIs, data feeds, or licensed datasets', detail: 'App calls services or retrieves data originating outside William Blair — market data, public APIs, licensed third-party datasets.' },
+      { val: '5', score: 3, text: 'Internal production systems via IT-managed interface', detail: 'App accesses non-M365 internal firm data through an IT-approved API layer or MCP server. The connection is managed and audited by IT.' },
+      { val: '6', score: 0, text: 'Direct code-level connection to any data source', detail: 'App connects directly to a database, data warehouse, or internal system via connection string, credentials, or code — bypassing any IT-managed interface layer, regardless of where the data lives.', lane5: true },
+    ]
+  },
+  {
+    id: 'output', label: 'How is the app\'s output used?',
+    hint: 'Consider the most consequential use case, not the most common.',
+    options: [
+      { val: '1', score: 0, text: 'Personal productivity only', detail: 'The maker uses it to do their own work faster \u2014 no downstream impact on others.' },
+      { val: '2', score: 1, text: 'Internal decisions or workflows', detail: 'Output informs internal processes but does not leave the firm or surface in client interactions.' },
+      { val: '3', score: 4, text: 'Client conversations or regulated workflows', detail: 'Output surfaces in advisor-client interactions or compliance-governed processes.', flag: true },
+    ]
+  },
+];
+
+const TIERS = {
+  1: { label: 'Tier 1', name: 'Personal / Maker', color: '#085041', bg: '#E1F5EE', border: '#5DCAA5', dot: '#0F6E56', desc: 'Low risk. No IT approval required. The maker governs this app under the acceptable use policy. Must be re-assessed if any characteristics change.' },
+  2: { label: 'Tier 2', name: 'Team / Limited Scope', color: '#0C447C', bg: '#E6F1FB', border: '#85B7EB', dot: '#185FA5', desc: 'Moderate risk. Lightweight IT registration required before sharing. Auto-approved unless a flag is triggered. Manager awareness documented.' },
+  3: { label: 'Tier 3', name: 'Firm-Wide / Enterprise', color: '#3C3489', bg: '#EEEDFE', border: '#AFA9EC', dot: '#534AB7', desc: 'Elevated risk. Full IT approval chain required. Manager sponsorship, IT review, and Compliance sign-off where applicable.' },
+};
+
+const HARD_FLAGS = [
+  { q: 'data', val: '4', label: 'Restricted data \u2014 hard override', text: 'Minimum Tier 3. Restricted data requires the full IT approval chain and Compliance review regardless of audience size or total risk score.' },
+  { q: 'output', val: '3', label: 'Client-facing output \u2014 hard override', text: 'Minimum Tier 3. Any output used in client conversations or regulated workflows requires the full IT approval chain.' },
+];
+
+const IT_REVIEW_TRIGGERS = [];
+const LANE5_TRIGGERS = [
+  { q: 'support', val: '4', label: 'Lane 5 — IT development request', text: 'This app requires IT to own and maintain the codebase and handle change requests as development work. This is outside the citizen developer model. Submit this as a Lane 5 IT development request through your BU or SRG IT lead.' },
+  { q: 'integration', val: '6', label: 'Lane 5 — direct data connection', text: 'Apps that connect directly to databases, data warehouses, or internal systems via code-level connections bypass IT governance controls and are outside the citizen developer model. Submit this as a Lane 5 IT development request. If you need this data in an app, ask IT about provisioning an approved MCP server or connector.' },
+];
+
+const RACI = {
+  1: {
+    owner: [
+      { text: 'Complete acceptable use acknowledgment in the IT registry (one-time per employee)', phase: 'Before use' },
+      { text: 'Preserve source \u2014 save LLM session URL or code in personal notes', phase: 'Before use' },
+      { text: 'Keep app within original group of 5 \u2014 no broader distribution', phase: 'Ongoing' },
+      { text: 'Re-submit within 10 business days if scope, audience, or data classification changes', phase: 'If triggered' },
+    ],
+    it: [
+      { text: 'No action required \u2014 maker self-governs under acceptable use policy', phase: '\u2014' },
+      { text: 'Receive and log re-tier submissions if scope expands', phase: 'If triggered' },
+    ],
+    compliance: [],
+  },
+  2: {
+    owner: [
+      { text: 'Submit lightweight IT registration with app description, platform, and user list', phase: 'Before sharing' },
+      { text: 'Document and preserve source \u2014 LLM session URL or code repository noted at registration', phase: 'Before sharing' },
+      { text: 'Notify manager of registration and intended use', phase: 'Before sharing' },
+      { text: 'Maintain app and keep embedded data current', phase: 'Ongoing' },
+      { text: 'Complete annual check-in confirming app is active and owner is current', phase: 'Annual' },
+      { text: 'Re-tier within 10 business days if audience, data, or support expectations change', phase: 'If triggered' },
+    ],
+    it: [
+      { text: 'Review registration within 5 business days', phase: 'Before sharing' },
+      { text: 'Auto-approve unless a concern is flagged \u2014 document findings in registry', phase: 'Before sharing' },
+      { text: 'Send annual check-in notification and flag non-responses within 30 days', phase: 'Annual' },
+    ],
+    compliance: [],
+  },
+  3: {
+    owner: [
+      { text: 'Identify a manager sponsor \u2014 required before registration can proceed', phase: 'Before registration' },
+      { text: 'Submit Tier 3 registration via manager sponsor', phase: 'Before registration' },
+      { text: 'Sign App Ownership Agreement confirming support SLA and succession obligations', phase: 'Before deployment' },
+      { text: 'Preserve and log source \u2014 LLM session URL or code repository submitted at registration', phase: 'Before deployment' },
+      { text: 'Provide app file to IT for deployment \u2014 no direct distribution to end users', phase: 'Before deployment' },
+      { text: 'Manage user access \u2014 add and remove users from Azure AD group as team changes', phase: 'Ongoing' },
+      { text: 'Refresh embedded data within 30 days of source update and notify IT on each refresh', phase: 'Ongoing' },
+      { text: 'Complete full annual review each January', phase: 'Annual' },
+      { text: 'Initiate ownership transfer before leaving role or the firm', phase: 'If triggered' },
+    ],
+    it: [
+      { text: 'Complete full IT review within 10 business days of registration', phase: 'Before deployment' },
+      { text: 'Route to Compliance if financial output, client data, or regulated workflows are involved', phase: 'Before deployment' },
+      { text: 'Provision Azure Static Web App and configure Easy Auth via Azure AD group', phase: 'Before deployment' },
+      { text: 'Deploy all app updates \u2014 owner must not distribute files directly to end users', phase: 'Ongoing' },
+      { text: 'Conduct technical annual review in January \u2014 access controls, retention, configuration', phase: 'Annual' },
+      { text: 'Initiate suspension process for violations or missed annual reviews', phase: 'If triggered' },
+    ],
+    compliance: [
+      { text: 'Review application if financial output, client data, NPI, or regulated workflows are involved', phase: 'Before deployment' },
+      { text: 'Issue acceptable use guidance if a policy gap is identified', phase: 'Before deployment' },
+    ],
+  },
+};
+
+const PLATFORM_CONTROLS = {
+  static: {
+    label: 'Static file (HTML, LLM-generated)',
+    tiers: {
+      1: ['No external dependencies permitted. App runs locally — no hosted URL.'],
+      2: ['Pre-approved CDNs only (e.g. cdnjs.cloudflare.com). No external API calls.', 'Distributed via direct OneDrive share within the team — no hosted URL required.'],
+      3: ['Full dependency review required. All CDNs must be allowlisted by IT.', 'Hosted on Azure Static Web App provisioned by IT. Easy Auth enforced via Azure AD group.', 'IT deploys all updates — owner does not distribute files directly.'],
+    }
+  },
+  powerapp: {
+    label: 'Power App or Power Automate',
+    tiers: {
+      1: ['Standard connectors only. No premium connectors or external data sources.', 'App must remain in the IT-managed Power Platform environment — not the default environment.'],
+      2: ['Pre-approved connectors only. No premium connectors without IT review.', 'Must be in the IT-managed Power Platform environment — not the default environment.'],
+      3: ['Full connector review required before deployment.', 'DLP policy confirmation required. IT manages the environment configuration.', 'No premium or external connectors without explicit IT and Compliance sign-off.'],
+    }
+  },
+  agentbuilder: {
+    label: 'Copilot Agent Builder',
+    tiers: {
+      1: ['Agent publishing scope must be personal only — not shared to a team or org.', 'Document all connectors or plugins enabled in the agent.'],
+      2: ['Confirm agent publishing scope is limited to the named team. Not org-wide.', 'Document all connectors or plugins enabled. IT reviews at registration.'],
+      3: ['IT reviews connector scope and confirms DLP policy coverage before deployment.', 'Agent publishing restricted to approved users only — configured by IT in M365 admin center.'],
+    }
+  },
+  agent: {
+    label: 'Copilot Studio',
+    tiers: {
+      1: ['All M365 connectors and Graph API permissions must be declared at registration.', 'Agent scope restricted to personal use only — IT confirms publishing restriction.'],
+      2: ['All M365 connectors and Graph API permissions must be declared at registration.', 'IT configures agent publishing restriction in M365 admin center — approved users only.'],
+      3: ['Full DLP policy review mandatory before deployment.', 'All connectors and Graph API permissions reviewed by IT.', 'Contact Legal or Compliance directly if there are policy questions before proceeding.'],
+    }
+  },
+  custom: {
+    label: 'Custom code or script',
+    tiers: {
+      1: ['Source code or LLM session URL preserved by owner — not required to be submitted.', 'No hardcoded API keys or credentials in the codebase.'],
+      2: ['Source code and dependency manifest submitted to IT at registration.', 'No hardcoded API keys or credentials in the codebase.'],
+      3: ['Mandatory IT security review and dependency scan before deployment.', 'Azure Key Vault required for all secrets and credentials — no hardcoded values.', 'Source code submitted to IT at registration and version-controlled.'],
+    }
+  },
+  other: {
+    label: 'Platform not listed',
+    tiers: {
+      1: ['Contact your BU or SRG IT lead before distributing this app.', 'IT will assess the platform and assign appropriate controls before a tier can be confirmed.'],
+      2: ['Contact your BU or SRG IT lead before distributing this app.', 'IT will assess the platform and assign appropriate controls before a tier can be confirmed.'],
+      3: ['Contact your BU or SRG IT lead before distributing this app.', 'IT will assess the platform and assign appropriate controls before a tier can be confirmed.'],
+    }
+  },
+};
+
+const state = {};
+let platformVal = null;
+
+function buildQuestions() {
+  const container = document.getElementById('questions-container');
+  QUESTIONS.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'question';
+    div.id = 'q-' + q.id;
+    div.innerHTML = `
+      <div class="q-header" style="cursor:pointer" onclick="toggleQ('${q.id}')">
+        <span class="q-num">${String(i+1).padStart(2,'0')}</span>
+        <span class="q-label">${q.label}</span>
+        <button class="q-chevron" id="chev-${q.id}" onclick="event.stopPropagation();toggleQ('${q.id}')">&#8964;</button>
+      </div>
+      ${q.hint ? `<div class="q-hint">${q.hint}</div>` : ''}
+      <div class="q-summary" id="sum-${q.id}"></div>
+      <div class="options" id="opts-${q.id}">
+        ${q.options.map(o => `
+          <button class="opt" data-q="${q.id}" data-val="${o.val}" data-score="${o.score}" onclick="selectOpt(this)">
+            <div class="opt-radio"><div class="opt-radio-inner"></div></div>
+            <div class="opt-body">
+              <div class="opt-text">${o.text}</div>
+              ${o.detail ? `<div class="opt-detail">${o.detail}</div>` : ''}
+            </div>
+            <div class="opt-score">${o.score > 0 ? '+'+o.score : '0'}</div>
+          </button>
+        `).join('')}
+      </div>`;
+    container.appendChild(div);
+  });
+
+  // Platform question — always visible, does not affect score
+  const pdiv = document.createElement('div');
+  pdiv.className = 'question';
+  pdiv.id = 'q-platform';
+  pdiv.innerHTML = `
+    <div class="q-header" style="cursor:pointer" onclick="toggleQ('platform')">
+      <span class="q-num">06</span>
+      <span class="q-label">What platform or tool was used to build this app?</span>
+      <button class="q-chevron" id="chev-platform" onclick="event.stopPropagation();toggleQ('platform')">&#8964;</button>
+    </div>
+    <div class="q-hint">Determines platform-specific controls only. Does not affect your tier score.</div>
+    <div class="q-summary" id="sum-platform"></div>
+    <div class="options">
+      ${Object.entries(PLATFORM_CONTROLS).map(([val, p]) => `
+        <button class="opt" onclick="selectPlatform('${val}')">
+          <div class="opt-radio"><div class="opt-radio-inner"></div></div>
+          <div class="opt-body"><div class="opt-text">${p.label}</div></div>
+          <div class="opt-score">controls</div>
+        </button>`).join('')}
+    </div>`;
+  container.appendChild(pdiv);
+}
+
+function toggleQ(qId) {
+  const qEl = document.getElementById('q-' + qId);
+  const chev = document.getElementById('chev-' + qId);
+  if (!qEl) return;
+  qEl.classList.toggle('collapsed');
+  if (chev) chev.classList.toggle('collapsed');
+}
+
+function selectOpt(btn) {
+  const q = btn.dataset.q;
+  const val = btn.dataset.val;
+  const score = parseInt(btn.dataset.score);
+  const opt = QUESTIONS.find(x => x.id === q)?.options.find(o => o.val === val);
+  const isFlag = opt?.flag;
+  document.querySelectorAll(`[data-q="${q}"]`).forEach(b => {
+    b.classList.remove('sel', 'flag-sel');
+    const inner = b.querySelector('.opt-radio-inner');
+    const radio = b.querySelector('.opt-radio');
+    if (inner) inner.style.background = '';
+    if (radio) radio.style.borderColor = '';
+  });
+  btn.classList.add(isFlag ? 'flag-sel' : 'sel');
+  document.getElementById('q-' + q).classList.add('answered');
+  state[q] = { val, score, flag: isFlag, itreview: opt?.itreview };
+  // Update summary line and auto-collapse
+  const sumEl = document.getElementById('sum-' + q);
+  if (sumEl) sumEl.textContent = opt?.text || '';
+  const qEl = document.getElementById('q-' + q);
+  const chev = document.getElementById('chev-' + q);
+  if (qEl && !qEl.classList.contains('collapsed')) {
+    qEl.classList.add('collapsed');
+    if (chev) chev.classList.add('collapsed');
+  }
+  const answered = Object.keys(state).length;
+  document.getElementById('q-count').textContent = `${answered} of 6 answered`;
+  document.getElementById('progress-fill').style.width = `${(answered/6)*100}%`;
+  renderResult();
+}
+
+function calcTier() {
+  if (Object.keys(state).length === 0) return null;
+  let score = 0;
+  for (const k in state) score += state[k].score;
+  const hasFlag = HARD_FLAGS.some(f => state[f.q] && state[f.q].val === f.val);
+  if (hasFlag) return { tier: 3, score, forced: true };
+  if (score <= 2) return { tier: 1, score, forced: false };
+  if (score <= 6) return { tier: 2, score, forced: false };
+  return { tier: 3, score, forced: false };
+}
+
+function getDerived(tier) {
+  const audVal = state.audience?.val;
+  const suppVal = state.support?.val;
+  const intVal = state.integration?.val;
+  const summaries = {
+    1: 'Self-governed by the maker. No IT approval required. App stays within a group of 5 — sharing beyond that triggers a mandatory re-assessment. No hosted URL permitted.',
+    2: `Lightweight IT registration required before sharing${audVal === '2' ? ' with your named team' : ' with your group'}. ${suppVal === '2' ? 'Owner and team self-support — no formal SLA.' : 'Self-supported by the maker.'} Distribution via direct share only — no firm-wide publishing without re-tiering.`,
+    3: `Full IT approval chain required — manager sponsor, IT review, and Compliance sign-off where applicable. App hosted on Azure Static Web App provisioned by IT with Easy Auth enforced. IT deploys all updates — owner does not distribute files directly to end users. 5-business-day support response SLA.`,
+  };
+  return { summary: summaries[tier] };
+}
+
+let raciGroupCounter = 0;
+function raciGroup(label, color, bg, border, items) {
+  if (!items || !items.length) return '';
+  const id = 'rg-' + (++raciGroupCounter);
+  const rows = items.map(i => `<div class="raci-item"><div class="raci-phase" style="color:${color};background:${bg};border:1px solid ${border}">${i.phase || '\u2014'}</div><div class="raci-text">${i.text}</div></div>`).join('');
+  return `<div class="raci-group"><div class="raci-group-header" style="background:${bg};border-left:3px solid ${color}" onclick="toggleRaciGroup('${id}')"><span class="raci-group-label" style="color:${color}">${label}</span><span class="raci-chevron" id="rc-${id}">&#8964;</span></div><div class="raci-group-body" id="${id}">${rows}</div></div>`;
+}
+
+function toggleRaciGroup(id) {
+  const body = document.getElementById(id);
+  const chev = document.getElementById('rc-' + id);
+  if (body) body.classList.toggle('collapsed');
+  if (chev) chev.classList.toggle('collapsed');
+}
+
+function renderResult() {
+  raciGroupCounter = 0;
+  const result = calcTier();
+  if (!result) return;
+  const { tier, score, forced } = result;
+  const t = TIERS[tier];
+  const answered = Object.keys(state).length;
+  const maxScore = QUESTIONS.reduce((s, q) => s + Math.max(...q.options.map(o => o.score)), 0);
+  const pct = Math.min(100, Math.round((score / maxScore) * 100));
+  const flags = HARD_FLAGS.filter(f => state[f.q] && state[f.q].val === f.val);
+  const itReviews = IT_REVIEW_TRIGGERS.filter(t => state[t.q] && state[t.q].val === t.val);
+  const lane5Flags = LANE5_TRIGGERS.filter(f => state[f.q] && state[f.q].val === f.val);
+  const segColors = ['#0F6E56','#185FA5','#534AB7'];
+  const segs = [1,2,3].map(i => `<div class="meter-seg" style="background:${i <= tier ? segColors[i-1] : '#e0e7ef'}"></div>`).join('');
+  const flagHtml = flags.map(f => `<div class="flag-item animate-in"><div class="flag-title">${f.label}</div><div class="flag-text">${f.text}</div></div>`).join('');
+  const itHtml = itReviews.map(t => `<div class="it-review-item animate-in"><div class="flag-title">IT Review Required</div><div class="flag-text">${t.text}</div></div>`).join('');
+
+  const customCodeFlag = platformVal === 'custom';
+  const otherPlatformFlag = platformVal === 'other';
+  const lane5Html = lane5Flags.map(f => `<div class="it-review-item animate-in" style="background:#EDE9FE;border-color:#AFA9EC;"><div class="flag-title" style="color:#3C3489">${f.label}</div><div class="flag-text" style="color:#26215C">${f.text}</div></div>`).join('');
+  const customFlagHtml = customCodeFlag ? `<div class="it-review-item animate-in"><div class="flag-title">Custom code — IT review required</div><div class="flag-text">Custom code or scripts have an unbounded risk surface regardless of tier. Contact your BU or SRG IT lead before distributing.</div></div>` : '';
+  const otherPlatformHtml = otherPlatformFlag ? `<div class="it-review-item animate-in"><div class="flag-title">Platform not listed — IT review required</div><div class="flag-text">Contact your BU or SRG IT lead before distributing this app. IT must assess the platform and assign appropriate controls before a tier can be confirmed.</div></div>` : '';
+
+  document.getElementById('score-body').innerHTML = `
+    <div class="tier-badge animate-in" style="background:${t.bg};border-color:${t.border};color:${t.color}">
+      <div class="tier-badge-label" style="color:${t.color}">${t.label}</div>
+      <div class="tier-badge-name" style="color:${t.color}">${t.name}</div>
+      <div class="tier-badge-desc" style="color:${t.color}">${t.desc}</div>
+    </div>
+    ${flags.length ? `<div class="flags-section">${flagHtml}</div>` : ''}
+    ${itHtml}
+    ${lane5Html}
+    ${customFlagHtml}
+    ${otherPlatformHtml}
+    <div class="meter-wrap">
+      <div class="meter-label"><span>Risk score</span><span style="font-family:var(--mono);font-weight:500">${score} / ${maxScore} pts</span></div>
+      <div class="meter-track"><div class="meter-fill" style="width:${pct}%;background:${t.color}"></div></div>
+      <div class="meter-segs">${segs}</div>
+    </div>
+    ${answered < 6 ? `<div style="font-size:11px;color:var(--gray);text-align:center;padding:4px 0;font-weight:300">${6 - answered} question${6-answered>1?'s':''} remaining \u2014 tier may adjust</div>` : ''}`;
+
+  if (answered > 0 && !lane5Flags.length) {
+    const derived = getDerived(tier);
+    const raci = RACI[tier];
+    const platformDef = platformVal ? PLATFORM_CONTROLS[platformVal] : null;
+    const platform = platformDef ? { label: platformDef.label, items: platformDef.tiers[tier] || [] } : null;
+
+    const toolBanner = '';
+
+    // Build IT items + platform controls merged
+    const itItems = [...raci.it];
+    const platformItems = platform ? platform.items.map(c => ({ text: c, phase: 'Platform control' })) : [];
+    const itWithPlatform = platformItems.length
+      ? [...itItems, { text: `— ${platform.label} —`, phase: '', divider: true }, ...platformItems]
+      : itItems;
+
+    function raciGroupWithDivider(label, color, bg, border, items) {
+      if (!items || !items.length) return '';
+      const rows = items.map(i => {
+        if (i.divider) return `<div class="raci-item" style="background:${bg};opacity:0.7"><div style="font-size:10px;font-weight:600;color:${color};font-family:var(--mono);padding:2px 0;letter-spacing:.04em">${i.text}</div></div>`;
+        return `<div class="raci-item"><div class="raci-phase" style="color:${color};background:${bg};border:1px solid ${border}">${i.phase || '—'}</div><div class="raci-text">${i.text}</div></div>`;
+      }).join('');
+      const id = 'rg-wd-' + (++raciGroupCounter);
+      return `<div class="raci-group"><div class="raci-group-header" style="background:${bg};border-left:3px solid ${color}" onclick="toggleRaciGroup('${id}')"><span class="raci-group-label" style="color:${color}">${label}</span><span class="raci-chevron" id="rc-${id}">&#8964;</span></div><div class="raci-group-body" id="${id}">${rows}</div></div>`;
+    }
+
+    // Save collapsed state of RACI groups before re-render
+    const collapsedGroups = new Set();
+    document.querySelectorAll('.raci-group-body.collapsed').forEach(el => collapsedGroups.add(el.id));
+
+    document.getElementById('controls-body').innerHTML =
+      `<div class="raci-derived" style="padding:12px 14px;font-size:12.5px;line-height:1.6;color:var(--charcoal);border:1px solid #e0e7ef;border-radius:7px;margin-bottom:16px;">${derived.summary}</div>` +
+      raciGroup('App Owner Responsibilities', '#085041', '#E1F5EE', '#5DCAA5', raci.owner) +
+      raciGroupWithDivider('IT Responsibilities', '#0C447C', '#E6F1FB', '#85B7EB', itWithPlatform) +
+      (tier === 3 ? raciGroup('Compliance Responsibilities', '#791F1F', '#FCEBEB', '#F09595', raci.compliance) : '');
+
+
+
+    // Restore collapsed state
+    collapsedGroups.forEach(id => {
+      const body = document.getElementById(id);
+      const chev = document.getElementById('rc-' + id);
+      if (body) { body.classList.add('collapsed'); }
+      if (chev) { chev.classList.add('collapsed'); }
+    });
+
+    const badge = document.getElementById('controls-tier-badge');
+    badge.textContent = t.label;
+    badge.style.cssText = `background:${t.bg};color:${t.color};border:1px solid ${t.border};font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px`;
+    document.getElementById('controls-card').style.display = 'block';
+    document.getElementById('actions-card').style.display = answered >= 1 ? 'block' : 'none';
+  } else if (lane5Flags.length) {
+    document.getElementById('controls-card').style.display = 'none';
+    document.getElementById('actions-card').style.display = 'none';
+  }
+}
+
+function selectPlatform(val) {
+  platformVal = val;
+  document.querySelectorAll('#q-platform .opt').forEach(b => {
+    const isSelected = b.getAttribute('onclick') === `selectPlatform('${val}')`;
+    b.classList.toggle('sel', isSelected);
+    const inner = b.querySelector('.opt-radio-inner');
+    if (inner) inner.style.background = isSelected ? 'var(--blue)' : 'transparent';
+    const radio = b.querySelector('.opt-radio');
+    if (radio) radio.style.borderColor = isSelected ? 'var(--blue)' : '#c5d2dc';
+  });
+  const pq = document.getElementById('q-platform');
+  pq.classList.add('answered');
+  const sumEl = document.getElementById('sum-platform');
+  if (sumEl && PLATFORM_CONTROLS[val]) sumEl.textContent = PLATFORM_CONTROLS[val].label;
+  const chev = document.getElementById('chev-platform');
+  if (pq && !pq.classList.contains('collapsed')) {
+    pq.classList.add('collapsed');
+    if (chev) chev.classList.add('collapsed');
+  }
+  const answered = Object.keys(state).length + (platformVal ? 1 : 0);
+  document.getElementById('q-count').textContent = `${answered} of 6 answered`;
+  document.getElementById('progress-fill').style.width = `${(answered/6)*100}%`;
+  renderResult();
+}
+
+function printReport() { window.print(); }
+
+function copyResults() {
+  const result = calcTier();
+  if (!result) return;
+  const { tier, score } = result;
+  const t = TIERS[tier];
+  const flags = HARD_FLAGS.filter(f => state[f.q] && state[f.q].val === f.val);
+  const maxScore = QUESTIONS.reduce((s, q) => s + Math.max(...q.options.map(o => o.score)), 0);
+  let text = `William Blair \u2014 Citizen Developer App Risk Assessment\n==========================================\nResult: ${t.label} \u2014 ${t.name}\nRisk Score: ${score} / ${maxScore} points\n`;
+  if (flags.length) text += `Hard Overrides: ${flags.map(f => f.label).join('; ')}\n`;
+  text += `\n${t.desc}\n\nAnswers:\n`;
+  QUESTIONS.forEach(q => { if (state[q.id]) { const opt = q.options.find(o => o.val === state[q.id].val); text += `  ${q.label}\n  \u2192 ${opt.text}\n`; } });
+  if (platformVal && PLATFORM_CONTROLS[platformVal]) text += `  Platform: ${PLATFORM_CONTROLS[platformVal].label}\n`;
+  const derived = getDerived(tier);
+  text += `\nWhat This Means:\n  ${derived.summary}\n`;
+  navigator.clipboard.writeText(text).then(() => { const btn = document.querySelector('.btn-secondary'); const orig = btn.textContent; btn.textContent = 'Copied to clipboard'; setTimeout(() => { btn.textContent = orig; }, 2000); });
+}
+
+function resetAll() {
+  Object.keys(state).forEach(k => delete state[k]);
+  platformVal = null;
+  // Reset left panel question chevrons — expand all
+  document.querySelectorAll('.opt').forEach(b => b.classList.remove('sel', 'flag-sel'));
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('answered', 'collapsed'));
+  document.querySelectorAll('.q-chevron').forEach(c => c.classList.remove('collapsed'));
+  document.querySelectorAll('.q-summary').forEach(s => s.textContent = '');
+  document.querySelectorAll('.opt-radio-inner').forEach(i => i.style.background = 'transparent');
+  document.querySelectorAll('.opt-radio').forEach(r => r.style.borderColor = '#c5d2dc');
+  // Reset right panel RACI chevrons — expand all
+  document.querySelectorAll('.raci-group-body').forEach(b => b.classList.remove('collapsed'));
+  document.querySelectorAll('.raci-chevron').forEach(c => c.classList.remove('collapsed'));
+  // Reset score and controls
+  document.getElementById('score-body').innerHTML = '<div class="score-empty">Answer the questions on the left to see your tier assignment.</div>';
+  document.getElementById('controls-card').style.display = 'none';
+  document.getElementById('actions-card').style.display = 'none';
+  document.getElementById('q-count').textContent = '0 of 6 answered';
+  document.getElementById('progress-fill').style.width = '0%';
+}
+
+buildQuestions();
+</script>
+</body>
+</html>

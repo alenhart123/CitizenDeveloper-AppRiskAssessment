@@ -1,522 +1,474 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Citizen Developer App Risk Assessment — William Blair CTS</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Citizen Development Hub — William Blair</title>
 <style>
-  :root {
-    --navy: #004165; --blue: #007AC9; --teal: #3F859E; --sky: #3DB7E4;
-    --pale: #C2DEEA; --charcoal: #48484A; --gray: #9A9B9C; --light: #F4F7FA; --white: #FFFFFF;
-    --t1: #0F6E56;   --t1-bg: #E1F5EE;  --t1-border: #5DCAA5;
-    --t2: #185FA5;   --t2-bg: #E6F1FB;  --t2-border: #85B7EB;
-    --t3: #534AB7;   --t3-bg: #EEEDFE;  --t3-border: #AFA9EC;
-    --red: #A32D2D;  --red-bg: #FCEBEB; --red-border: #F09595;
-    --amber: #633806; --amber-bg: #FAEEDA; --amber-border: #FAC775;
-    --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font); background: var(--light); color: var(--charcoal); min-height: 100vh; font-size: 14px; line-height: 1.6; }
-  header { background: var(--navy); color: var(--white); padding: 0; }
-  .header-inner { max-width: 1100px; margin: 0 auto; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-  .header-brand { display: flex; align-items: center; gap: 16px; }
-  .wb-mark { width: 36px; height: 36px; background: var(--blue); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--white); flex-shrink: 0; }
-  .header-title { font-size: 15px; font-weight: 500; color: var(--white); line-height: 1.2; }
-  .header-sub { font-size: 12px; color: var(--pale); margin-top: 2px; font-weight: 300; }
-  .header-badge { font-family: var(--mono); font-size: 10px; color: var(--pale); border: 1px solid rgba(194,222,234,.3); padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
-  .progress-bar-wrap { background: rgba(255,255,255,.1); height: 3px; }
-  .progress-bar-fill { height: 3px; background: var(--sky); transition: width .4s ease; width: 0%; }
-  .page { max-width: 1100px; margin: 0 auto; padding: 32px 32px 64px; display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
-  .intro { grid-column: 1 / -1; background: var(--white); border: 1px solid #e0e7ef; border-radius: 10px; padding: 20px 24px; display: flex; align-items: flex-start; gap: 16px; }
-  .intro-icon { width: 36px; height: 36px; background: var(--pale); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-  .intro-icon svg { width: 18px; height: 18px; }
-  .intro-text p { font-size: 13px; color: var(--charcoal); line-height: 1.65; }
-  .intro-text strong { font-weight: 600; color: var(--navy); }
-  .questions-panel { background: var(--white); border: 1px solid #e0e7ef; border-radius: 10px; overflow: hidden; }
-  .panel-header { padding: 16px 24px; border-bottom: 1px solid #e0e7ef; display: flex; align-items: center; justify-content: space-between; }
-  .panel-header-title { font-size: 12px; font-weight: 600; color: var(--navy); text-transform: uppercase; letter-spacing: .06em; }
-  .q-count { font-family: var(--mono); font-size: 11px; color: var(--gray); }
-  .question { padding: 18px 24px; border-bottom: 1px solid #f0f4f8; transition: background .15s; }
-  .question:last-child { border-bottom: none; }
-  .question.answered { background: #fafcff; }
-  .q-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
-  .q-num { font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--gray); background: var(--light); border: 1px solid #e0e7ef; border-radius: 4px; padding: 2px 6px; margin-top: 1px; flex-shrink: 0; }
-  .question.answered .q-num { background: var(--navy); color: var(--white); border-color: var(--navy); }
-  .q-label { font-size: 13px; font-weight: 500; color: var(--navy); line-height: 1.4; }
-  .q-hint { font-size: 11px; color: var(--gray); margin: 2px 0 0 36px; font-weight: 300; }
-  .options { display: flex; flex-direction: column; gap: 6px; margin-left: 36px; }
-  .opt { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; border: 1px solid #e0e7ef; border-radius: 7px; cursor: pointer; transition: all .15s; background: var(--white); text-align: left; width: 100%; font-family: var(--font); }
-  .opt:hover { border-color: var(--blue); background: #f0f7ff; }
-  .opt-radio { width: 14px; height: 14px; border: 1.5px solid #c5d2dc; border-radius: 50%; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
-  .opt-radio-inner { width: 6px; height: 6px; border-radius: 50%; background: transparent; }
-  .opt-body { flex: 1; }
-  .opt-text { font-size: 13px; color: var(--charcoal); line-height: 1.4; }
-  .opt-detail { font-size: 11px; color: var(--gray); margin-top: 2px; font-weight: 300; }
-  .opt-score { font-family: var(--mono); font-size: 10px; color: var(--gray); background: var(--light); border: 1px solid #e0e7ef; border-radius: 4px; padding: 1px 5px; flex-shrink: 0; margin-top: 2px; }
-  .opt.sel { border-color: var(--blue); background: #f0f7ff; }
-  .opt.sel .opt-radio { border-color: var(--blue); }
-  .opt.sel .opt-radio-inner { background: var(--blue); }
-  .opt.sel .opt-text { color: var(--navy); font-weight: 500; }
-  .opt.sel .opt-score { background: var(--blue); color: var(--white); border-color: var(--blue); }
-  .opt.flag-sel { border-color: var(--red); background: #fff5f5; }
-  .opt.flag-sel .opt-radio { border-color: var(--red); }
-  .opt.flag-sel .opt-radio-inner { background: var(--red); }
-  .opt.flag-sel .opt-text { color: var(--red); font-weight: 500; }
-  .opt.flag-sel .opt-score { background: var(--red); color: var(--white); border-color: var(--red); }
-  .result-panel { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 16px; }
-  .score-card { background: var(--white); border: 1px solid #e0e7ef; border-radius: 10px; overflow: hidden; }
-  .score-header { padding: 14px 20px; border-bottom: 1px solid #e0e7ef; }
-  .score-header-title { font-size: 12px; font-weight: 600; color: var(--navy); text-transform: uppercase; letter-spacing: .06em; }
-  .score-body { padding: 20px; }
-  .score-empty { font-size: 13px; color: var(--gray); text-align: center; padding: 12px 0; font-weight: 300; }
-  .tier-badge { border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; border: 1.5px solid; transition: all .3s; }
-  .tier-badge-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
-  .tier-badge-name { font-size: 16px; font-weight: 600; margin-bottom: 6px; line-height: 1.2; }
-  .tier-badge-desc { font-size: 12px; line-height: 1.55; font-weight: 300; }
-  .meter-wrap { margin-bottom: 16px; }
-  .meter-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--gray); margin-bottom: 6px; }
-  .meter-track { height: 6px; background: var(--light); border-radius: 3px; overflow: hidden; border: 1px solid #e0e7ef; }
-  .meter-fill { height: 100%; border-radius: 3px; transition: width .4s ease, background .3s; }
-  .meter-segs { display: flex; gap: 3px; margin-top: 4px; }
-  .meter-seg { flex: 1; height: 3px; border-radius: 2px; transition: background .3s; }
-  .flags-section { margin-bottom: 14px; }
-  .flag-item { background: var(--red-bg); border: 1px solid var(--red-border); border-radius: 7px; padding: 10px 12px; margin-bottom: 6px; }
-  .flag-title { font-size: 11px; font-weight: 600; color: var(--red); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
-  .flag-text { font-size: 12px; color: #791F1F; line-height: 1.5; font-weight: 300; }
-  .it-review-item { background: var(--amber-bg); border: 1px solid var(--amber-border); border-radius: 7px; padding: 10px 12px; margin-bottom: 14px; }
-  .it-review-item .flag-title { color: var(--amber); }
-  .it-review-item .flag-text { color: #4A2800; }
-  .controls-card { background: var(--white); border: 1px solid #e0e7ef; border-radius: 10px; overflow: hidden; }
-  .controls-header { padding: 14px 20px; border-bottom: 1px solid #e0e7ef; display: flex; align-items: center; justify-content: space-between; }
-  .controls-header-title { font-size: 12px; font-weight: 600; color: var(--navy); text-transform: uppercase; letter-spacing: .06em; }
-  .controls-body { padding: 16px 20px; }
-  .raci-derived { margin-bottom: 16px; border: 1px solid #e0e7ef; border-radius: 7px; overflow: hidden; }
-  .raci-derived-item { display: flex; gap: 10px; padding: 9px 12px; border-bottom: 1px solid #f0f4f8; font-size: 12px; line-height: 1.5; }
-  .raci-derived-item:last-child { border-bottom: none; }
-  .raci-derived-label { font-weight: 600; color: var(--navy); flex-shrink: 0; min-width: 80px; }
-  .raci-derived-val { color: var(--charcoal); }
-  .raci-group { margin-bottom: 12px; border-radius: 7px; overflow: hidden; border: 1px solid #e0e7ef; }
-  .raci-group-header { padding: 8px 12px; }
-  .raci-group-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
-  .raci-group-body { background: var(--white); }
-  .raci-item { display: flex; gap: 10px; align-items: flex-start; padding: 7px 12px; border-bottom: 1px solid #f5f7fa; font-size: 12px; }
-  .raci-item:last-child { border-bottom: none; }
-  .raci-phase { font-family: var(--mono); font-size: 9px; font-weight: 500; padding: 2px 6px; border-radius: 3px; white-space: nowrap; flex-shrink: 0; margin-top: 1px; }
-  .raci-text { color: var(--charcoal); line-height: 1.5; }
-  .raci-tool-banner { font-size: 11px; font-weight: 600; color: var(--amber); background: var(--amber-bg); border: 1px solid var(--amber-border); border-radius: 6px; padding: 6px 10px; margin-top: 6px; text-align: center; }
-  .actions-card { background: var(--white); border: 1px solid #e0e7ef; border-radius: 10px; padding: 16px 20px; }
-  .actions-title { font-size: 12px; font-weight: 600; color: var(--navy); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
-  .action-btn { display: block; width: 100%; padding: 10px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; font-family: var(--font); cursor: pointer; border: none; text-align: left; margin-bottom: 8px; transition: all .15s; }
-  .action-btn:last-child { margin-bottom: 0; }
-  .btn-primary { background: var(--navy); color: var(--white); }
-  .btn-primary:hover { background: #005580; }
-  .btn-secondary { background: var(--light); color: var(--navy); border: 1px solid #e0e7ef; }
-  .btn-secondary:hover { background: #e8eef5; }
-  .btn-ghost { background: transparent; color: var(--gray); border: 1px solid #e0e7ef; font-size: 12px; }
-  .btn-ghost:hover { background: var(--light); color: var(--charcoal); }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  .animate-in { animation: fadeIn .25s ease forwards; }
-  @media print {
-    body { background: white; }
-    header { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .page { grid-template-columns: 1fr 1fr; padding: 16px; gap: 16px; }
-    .result-panel { position: static; }
-    .actions-card, .intro, .progress-bar-wrap { display: none; }
-    .opt-score { display: none; }
-  }
-  @media (max-width: 800px) { .page { grid-template-columns: 1fr; } .result-panel { position: static; } .header-badge { display: none; } }
+
+:root {
+  --navy:#004165; --blue:#007AC9; --teal:#3F859E; --green:#008566;
+  --sky:#3DB7E4; --pale:#C2DEEA; --charcoal:#48484A; --gray:#9A9B9C;
+  --bg:#edf3f7; --surface:#fff; --border:#cddce7;
+  --shadow:0 1px 4px rgba(0,65,101,.10),0 1px 2px rgba(0,65,101,.06);
+  --shadow-md:0 6px 20px rgba(0,65,101,.14);
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Cambria,'Times New Roman',serif;background:var(--bg);color:var(--charcoal);min-height:100vh;font-size:15px;line-height:1.6;}
+
+/* ── Header ── */
+header{background:var(--navy);padding:0 40px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:12px;color:#fff;font-size:15px;font-weight:700;}
+.logo-dots{display:flex;align-items:center;gap:2px;}
+.logo-dots span{display:block;border-radius:50%;}
+.logo-dots .a{width:9px;height:9px;background:var(--sky);}
+.logo-dots .b{width:6px;height:6px;background:var(--pale);opacity:.7;margin-left:-2px;}
+.logo-rule{width:1px;height:22px;background:rgba(255,255,255,.2);}
+.logo-sub{font-weight:400;color:var(--pale);font-size:13px;}
+.hdr-right{display:flex;align-items:center;gap:16px;}
+.hdr-user{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--pale);}
+.hdr-avatar{width:30px;height:30px;border-radius:50%;background:var(--blue);border:1px solid var(--sky);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;cursor:pointer;}
+nav a{padding:6px 12px;color:var(--pale);font-size:13px;text-decoration:none;border-radius:5px;transition:all .15s;}
+nav a:hover{background:rgba(255,255,255,.1);color:#fff;}
+nav{display:flex;gap:2px;}
+
+/* ── Hero ── */
+.hero{background:var(--navy);padding:52px 40px 0;position:relative;overflow:hidden;}
+.hero-blob{position:absolute;border-radius:50%;pointer-events:none;}
+.hero-blob.b1{width:420px;height:420px;top:-130px;right:-90px;background:rgba(61,183,228,.07);}
+.hero-blob.b2{width:280px;height:280px;bottom:10px;left:28%;background:rgba(194,222,234,.05);}
+.hero-inner{max-width:980px;margin:0 auto;position:relative;z-index:1;}
+.hero-body{display:grid;grid-template-columns:1fr auto;gap:40px;align-items:flex-end;padding-bottom:36px;border-bottom:1px solid rgba(255,255,255,.1);}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(61,183,228,.15);border:1px solid rgba(61,183,228,.3);color:var(--sky);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:16px;}
+.eyebrow::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--sky);}
+.hero h1{font-size:clamp(24px,3.5vw,40px);font-weight:700;color:#fff;line-height:1.18;letter-spacing:-.01em;margin-bottom:14px;}
+.hero h1 em{font-style:normal;color:var(--sky);}
+.hero-desc{font-size:15px;color:var(--pale);max-width:500px;line-height:1.7;}
+.hero-stats{display:flex;flex-direction:column;gap:18px;align-items:flex-end;flex-shrink:0;}
+.stat{text-align:right;}
+.stat-n{font-size:34px;font-weight:700;color:#fff;line-height:1;}
+.stat-l{font-size:11px;color:var(--pale);letter-spacing:.04em;margin-top:2px;}
+
+/* Tab bar */
+.hero-tabs{display:flex;}
+.tab{padding:14px 20px;font-size:13px;font-weight:600;color:var(--pale);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;user-select:none;}
+.tab:hover{color:#fff;}
+.tab.on{color:var(--sky);border-bottom-color:var(--sky);}
+
+/* ── Page ── */
+.page{max-width:980px;margin:0 auto;padding:40px 24px 80px;}
+.panel{display:none;}.panel.on{display:block;padding-top:4px;}
+
+/* Section header */
+.sh{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.sh::after{content:'';flex:1;height:1px;background:var(--border);}
+.sh-gap{margin-top:36px;}
+
+/* ── Tiles ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:16px;margin-bottom:36px;}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px 22px 20px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow);transition:all .18s;cursor:pointer;position:relative;overflow:hidden;}
+.tile::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ta,var(--blue));opacity:0;transition:opacity .18s;}
+.tile:hover{border-color:var(--ta,var(--blue));box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.tile:hover::before{opacity:1;}
+.tile.dim{opacity:.52;cursor:default;pointer-events:none;}
+.t-icon{width:42px;height:42px;border-radius:9px;background:var(--tib,#e5f3fb);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.t-icon svg{width:20px;height:20px;color:var(--ta,var(--blue));stroke-width:1.7;}
+.t-name{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.t-desc{font-size:12px;color:var(--gray);line-height:1.55;flex:1;}
+.t-foot{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border);margin-top:auto;}
+.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;letter-spacing:.04em;text-transform:uppercase;}
+.b-live{background:#e0f2ec;color:var(--green);}
+.b-next{background:#fff3e0;color:#b36000;}
+.b-soon{background:#f0f4f6;color:var(--gray);}
+.b-it  {background:#eaf3f7;color:var(--teal);}
+.t-arr{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--gray);transition:all .15s;flex-shrink:0;}
+.tile:hover .t-arr{background:var(--ta,var(--blue));border-color:var(--ta,var(--blue));color:#fff;}
+.t-arr svg{width:12px;height:12px;}
+
+/* ── Docs ── */
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(218px,1fr));gap:13px;margin-bottom:36px;}
+.doc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 18px 14px;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:all .15s;}
+.doc:hover{border-color:var(--pale);box-shadow:var(--shadow);transform:translateY(-1px);}
+.doc-icon{width:36px;height:36px;border-radius:7px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.doc-icon svg{width:17px;height:17px;color:var(--teal);stroke-width:1.6;}
+.doc-name{font-size:13px;font-weight:700;color:var(--navy);line-height:1.3;}
+.doc-desc{font-size:11px;color:var(--gray);line-height:1.45;flex:1;}
+.doc-aud{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--teal);padding-top:8px;border-top:1px solid var(--border);}
+
+/* ── Process ── */
+.process-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px;box-shadow:var(--shadow);margin-bottom:36px;}
+.process-box h3{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:24px;}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;}
+.step{padding:0 20px 0 0;position:relative;}
+.step:not(:last-child)::after{content:'→';position:absolute;top:5px;right:-5px;color:var(--border);font-size:20px;}
+.step-n{width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;margin-bottom:10px;}
+.step-name{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.step-desc{font-size:12px;color:var(--gray);line-height:1.4;}
+
+/* Tier table */
+.tier-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);margin-bottom:36px;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 18px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:var(--navy);}
+tbody td{padding:12px 18px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:top;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:nth-child(even) td{background:#f7fafc;}
+.tp{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;}
+.t1{background:#e0f2ec;color:var(--green);}
+.t2{background:#fff3e0;color:#b36000;}
+.t3{background:#e5f3fb;color:var(--navy);}
+
+/* ── FAQ ── */
+.faq{margin-bottom:36px;}
+.faq-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden;}
+.faq-q{padding:14px 18px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:background .12s;user-select:none;}
+.faq-q:hover{background:var(--bg);}
+.chev{width:16px;height:16px;color:var(--gray);flex-shrink:0;transition:transform .2s;}
+.faq-item.open .chev{transform:rotate(180deg);}
+.faq-a{font-size:13px;color:var(--charcoal);line-height:1.65;padding:0 18px;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .2s;}
+.faq-item.open .faq-a{max-height:280px;padding:0 18px 14px;}
+
+/* ── Support ── */
+.support-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:13px;margin-bottom:36px;}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;display:flex;align-items:flex-start;gap:12px;transition:all .15s;cursor:pointer;}
+.sc:hover{border-color:var(--pale);box-shadow:var(--shadow);}
+.sc-icon{width:34px;height:34px;border-radius:7px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sc-icon svg{width:16px;height:16px;color:var(--blue);stroke-width:1.6;}
+.sc-name{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px;}
+.sc-desc{font-size:11px;color:var(--gray);}
+.oh{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px 28px;box-shadow:var(--shadow);}
+.oh h3{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+.oh p{font-size:13px;color:var(--charcoal);margin-bottom:4px;}
+.oh small{font-size:12px;color:var(--gray);}
+
+/* ── Footer ── */
+footer{background:var(--navy);padding:22px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.fl{color:var(--pale);font-size:13px;}
+.fl strong{color:#fff;}
+.flinks{display:flex;gap:20px;}
+.flinks a{font-size:12px;color:var(--pale);text-decoration:none;opacity:.75;}
+.flinks a:hover{opacity:1;}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:11px 16px;border-radius:8px;font-size:13px;box-shadow:var(--shadow-md);z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;}
+#toast.show{opacity:1;}
+
+@media(max-width:680px){
+  header{padding:0 20px;} nav{display:none;}
+  .hero{padding:36px 20px 0;} .hero-body{grid-template-columns:1fr;}
+  .hero-stats{flex-direction:row;align-items:flex-start;} .stat{text-align:left;}
+  .page{padding:28px 16px 60px;}
+  .steps{grid-template-columns:1fr 1fr;gap:20px;} .step::after{display:none;}
+  footer{padding:20px;}
+}
+
 </style>
 </head>
 <body>
+
 <header>
-  <div class="header-inner">
-    <div class="header-brand">
-      <div class="wb-mark">WB</div>
-      <div>
-        <div class="header-title">Citizen Developer App Risk Assessment</div>
-        <div class="header-sub">Central Technology Services — Governance Framework</div>
-      </div>
-    </div>
-    <div class="header-badge">Internal Use Only</div>
+  <div class="logo">
+    <img src="data:image/png;base64,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" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;" alt="William Blair"/>
+    <div class="logo-rule"></div>
+    <span>William Blair</span>
+    <span class="logo-sub">/ Citizen Dev Hub</span>
   </div>
-  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <div class="hdr-right">
+  
+    <div class="hdr-user">
+      <span>App Owner</span>
+      <div class="hdr-avatar">WB</div>
+    </div>
+  </div>
 </header>
 
-<div class="page">
-  <div class="intro">
-    <div class="intro-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#004165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-    </div>
-    <div class="intro-text">
-      <p><strong>How to use this tool:</strong> Answer all five questions about the app you want to deploy. The assessment scores each answer and derives the appropriate governance tier. The tier determines the required approval chain, controls, and hosting requirements. <strong>This assessment must be submitted to IT before any app is distributed beyond its original creator.</strong></p>
-    </div>
-  </div>
-
-  <div class="questions-panel">
-    <div class="panel-header">
-      <div class="panel-header-title">App Characteristics</div>
-      <div class="q-count" id="q-count">0 of 6 answered</div>
-    </div>
-    <div id="questions-container"></div>
-  </div>
-
-  <div class="result-panel">
-    <div class="score-card">
-      <div class="score-header"><div class="score-header-title">Risk Assessment</div></div>
-      <div class="score-body" id="score-body"><div class="score-empty">Answer the questions on the left to see your tier assignment.</div></div>
-    </div>
-    <div class="controls-card" id="controls-card" style="display:none">
-      <div class="controls-header">
-        <div class="controls-header-title">Required Controls</div>
-        <div id="controls-tier-badge"></div>
-      </div>
-      <div class="controls-body" id="controls-body"></div>
-    </div>
-    <div class="actions-card" id="actions-card" style="display:none">
-      <div class="actions-title">Actions</div>
-      <button class="action-btn btn-primary" onclick="printReport()">Print / Save as PDF</button>
-      <button class="action-btn btn-secondary" onclick="copyResults()">Copy results summary</button>
-      <button class="action-btn btn-ghost" onclick="resetAll()">Start over</button>
+<div class="hero">
+  <div class="hero-blob b1"></div>
+  <div class="hero-inner">
+    <div class="eyebrow">CenTech Citizen Development Program</div>
+    <h1>Build smarter tools.<br><em>Stay governed.</em></h1>
+    <p class="hero-desc">Your central hub for registering and governing citizen-built applications at William Blair.</p>
+    <div class="hero-tabs">
+      <div class="tab on" onclick="show('tools',this)">Tools</div>
+      <!-- Documentation tab - hidden for V1, enable when ready -->
+      <!-- <div class="tab" onclick="show('docs',this)">Documentation</div> -->
+      <div class="tab" onclick="show('process',this)">How it works</div>
+      <div class="tab" onclick="show('faq',this)">FAQ</div>
+      <!-- Support tab - hidden for V1, enable when ready -->
+      <!-- <div class="tab" onclick="show('support',this)">Support</div> -->
     </div>
   </div>
 </div>
 
-<script>
-const QUESTIONS = [
-  {
-    id: 'data', label: 'What data does this app access or produce?',
-    hint: 'Select the highest classification that applies. If multiple data types are combined, the highest governs.',
-    options: [
-      { val: '1', score: 0, text: 'Public', detail: 'Approved for external disclosure with no risk to the firm, clients, or employees. Examples: public website content, press releases, published research, marketing materials.' },
-      { val: '2', score: 1, text: 'Internal', detail: 'For use within William Blair only. Unauthorized external disclosure may cause limited harm. Examples: internal emails, policy documents, process documentation, non-sensitive technical documentation.' },
-      { val: '3', score: 2, text: 'Confidential', detail: 'Sensitive business or client information. Unauthorized disclosure could cause material harm. Examples: contracts, trading information, investment committee materials, marketing strategy, credentials.' },
-      { val: '4', score: 4, text: 'Restricted', detail: 'Highest sensitivity. Disclosure could result in severe legal, regulatory, or financial consequences. Examples: employee HR records, board materials, investor PII and banking information, proprietary source code, admin credentials.', flag: true },
-    ]
-  },
-  {
-    id: 'audience', label: 'How many people will use this app?',
-    hint: 'Count all intended users, not just the current pilot group.',
-    options: [
-      { val: '1', score: 0, text: '1\u20135 people, self-organized', detail: 'The maker and a small group who all know and support each other.' },
-      { val: '2', score: 1, text: 'A defined team or workgroup (6\u201320)', detail: 'A named team with a clear scope and manager oversight.' },
-      { val: '3', score: 3, text: 'Department-wide or firm-wide (20+)', detail: 'Any broad or open-ended distribution across the firm.' },
-    ]
-  },
-  {
-    id: 'support', label: 'What level of support is expected for this app?',
-    hint: 'Be honest about what users will expect when something breaks or data needs updating.',
-    options: [
-      { val: '1', score: 0, text: 'Self-supported by the maker \u2014 no IT involvement', detail: 'The maker maintains and updates the app. Users understand there is no formal support or SLA.' },
-      { val: '2', score: 1, text: 'Team-supported with informal expectations', detail: 'The owner and team maintain it. No formal SLA but users have reasonable expectations of availability.' },
-      { val: '3', score: 2, text: 'IT support expected or a formal SLA is required', detail: 'Users or the business expect IT involvement in support, updates, or uptime. This app will need to be reviewed and potentially rebuilt to IT standards.', itreview: true },
-    ]
-  },
-  {
-    id: 'integration', label: 'How complex is this app\'s integration with external data or services?',
-    hint: 'Consider all data connections \u2014 M365, APIs, live feeds, and any external services called at runtime.',
-    options: [
-      { val: '1', score: 0, text: 'Fully self-contained \u2014 no external connections', detail: 'All logic and data is bundled inside the app. No calls to external services, APIs, or live data sources.' },
-      { val: '2', score: 1, text: 'Connects to internal M365 data only', detail: 'App reads from SharePoint, OneDrive, Teams, or other M365 services. No external API calls or third-party data sources.' },
-      { val: '3', score: 2, text: 'Connects to external APIs or live data sources', detail: 'App calls external services, retrieves live data feeds, or integrates with non-M365 platforms at runtime.' },
-      { val: '4', score: 3, text: 'Complex multi-system integration', detail: 'App orchestrates multiple data sources, external APIs, and internal systems. Significant data flow complexity or dependency chain.' },
-    ]
-  },
-  {
-    id: 'output', label: 'How is the app\'s output used?',
-    hint: 'Consider the most consequential use case, not the most common.',
-    options: [
-      { val: '1', score: 0, text: 'Personal productivity only', detail: 'The maker uses it to do their own work faster \u2014 no downstream impact on others.' },
-      { val: '2', score: 1, text: 'Internal decisions or workflows', detail: 'Output informs internal processes but does not leave the firm or surface in client interactions.' },
-      { val: '3', score: 4, text: 'Client conversations or regulated workflows', detail: 'Output surfaces in advisor-client interactions or compliance-governed processes.', flag: true },
-    ]
-  },
-];
+<!-- ── Page content ── --
 
-const TIERS = {
-  1: { label: 'Tier 1', name: 'Personal / Maker', color: '#085041', bg: '#E1F5EE', border: '#5DCAA5', dot: '#0F6E56', desc: 'Low risk. No IT approval required. The maker governs this app under the acceptable use policy. Must be re-assessed if any characteristics change.' },
-  2: { label: 'Tier 2', name: 'Team / Limited Scope', color: '#0C447C', bg: '#E6F1FB', border: '#85B7EB', dot: '#185FA5', desc: 'Moderate risk. Lightweight IT registration required before sharing. Auto-approved unless a flag is triggered. Manager awareness documented.' },
-  3: { label: 'Tier 3', name: 'Firm-Wide / Enterprise', color: '#3C3489', bg: '#EEEDFE', border: '#AFA9EC', dot: '#534AB7', desc: 'Elevated risk. Full IT approval chain required. Manager sponsorship, IT review, and Compliance sign-off where applicable.' },
-};
+<!-- Page -->
 
-const HARD_FLAGS = [
-  { q: 'data', val: '4', label: 'Restricted data \u2014 hard override', text: 'Minimum Tier 3. Restricted data requires the full IT approval chain and Compliance review regardless of audience size or total risk score.' },
-  { q: 'output', val: '3', label: 'Client-facing output \u2014 hard override', text: 'Minimum Tier 3. Any output used in client conversations or regulated workflows requires the full IT approval chain.' },
-];
+<div class="page">
 
-const IT_REVIEW_TRIGGERS = [
-  { q: 'support', val: '3', text: 'IT support expected \u2014 this app will be reviewed by IT and may need to be rebuilt to IT standards before formal support can be provided.' },
-];
+  <div class="panel on" id="p-tools">
+<div class="sh" style="margin-top:4px;">App owner tools</div>
+    <div class="grid">
 
-const RACI = {
-  1: {
-    owner: [
-      { text: 'Complete acceptable use acknowledgment in the IT registry (one-time per employee)', phase: 'Before use' },
-      { text: 'Preserve source \u2014 save LLM session URL or code in personal notes', phase: 'Before use' },
-      { text: 'Keep app within original group of 5 \u2014 no broader distribution', phase: 'Ongoing' },
-      { text: 'Re-submit within 10 business days if scope, audience, or data classification changes', phase: 'If triggered' },
-    ],
-    it: [
-      { text: 'No action required \u2014 maker self-governs under acceptable use policy', phase: '\u2014' },
-      { text: 'Receive and log re-tier submissions if scope expands', phase: 'If triggered' },
-    ],
-    compliance: [],
-  },
-  2: {
-    owner: [
-      { text: 'Submit lightweight IT registration with app description, platform, and user list', phase: 'Before sharing' },
-      { text: 'Document and preserve source \u2014 LLM session URL or code repository noted at registration', phase: 'Before sharing' },
-      { text: 'Notify manager of registration and intended use', phase: 'Before sharing' },
-      { text: 'Maintain app and keep embedded data current', phase: 'Ongoing' },
-      { text: 'Complete annual check-in confirming app is active and owner is current', phase: 'Annual' },
-      { text: 'Re-tier within 10 business days if audience, data, or support expectations change', phase: 'If triggered' },
-    ],
-    it: [
-      { text: 'Review registration within 5 business days', phase: 'Before sharing' },
-      { text: 'Auto-approve unless a concern is flagged \u2014 document findings in registry', phase: 'Before sharing' },
-      { text: 'Send annual check-in notification and flag non-responses within 30 days', phase: 'Annual' },
-    ],
-    compliance: [],
-  },
-  3: {
-    owner: [
-      { text: 'Identify a manager sponsor \u2014 required before registration can proceed', phase: 'Before registration' },
-      { text: 'Submit Tier 3 registration via manager sponsor', phase: 'Before registration' },
-      { text: 'Sign App Ownership Agreement confirming support SLA and succession obligations', phase: 'Before deployment' },
-      { text: 'Preserve and log source \u2014 LLM session URL or code repository submitted at registration', phase: 'Before deployment' },
-      { text: 'Provide app file to IT for deployment \u2014 no direct distribution to end users', phase: 'Before deployment' },
-      { text: 'Manage user access \u2014 add and remove users from Azure AD group as team changes', phase: 'Ongoing' },
-      { text: 'Refresh embedded data within 30 days of source update and notify IT on each refresh', phase: 'Ongoing' },
-      { text: 'Complete full annual review each January', phase: 'Annual' },
-      { text: 'Initiate ownership transfer before leaving role or the firm', phase: 'If triggered' },
-    ],
-    it: [
-      { text: 'Complete full IT review within 10 business days of registration', phase: 'Before deployment' },
-      { text: 'Route to Compliance if financial output, client data, or regulated workflows are involved', phase: 'Before deployment' },
-      { text: 'Provision Azure Static Web App and configure Easy Auth via Azure AD group', phase: 'Before deployment' },
-      { text: 'Deploy all app updates \u2014 owner must not distribute files directly to end users', phase: 'Ongoing' },
-      { text: 'Conduct technical annual review in January \u2014 access controls, retention, configuration', phase: 'Annual' },
-      { text: 'Initiate suspension process for violations or missed annual reviews', phase: 'If triggered' },
-    ],
-    compliance: [
-      { text: 'Review application if financial output, client data, NPI, or regulated workflows are involved', phase: 'Before deployment' },
-      { text: 'Issue acceptable use guidance if a policy gap is identified', phase: 'Before deployment' },
-    ],
-  },
-};
-
-const PLATFORM_CONTROLS = {
-  static:       { label: 'Static file (HTML, LLM-generated)', items: ['No external dependencies at Tier 1. Pre-approved CDNs only at Tier 2. Full dependency review at Tier 3.', 'At Tier 3: all dependencies reviewed and CDN allowlisted. Hosted on Azure Static Web App with Easy Auth.'] },
-  powerapp:     { label: 'Power App or Power Automate', items: ['Pre-approved connectors only at Tier 2. No premium connectors without IT review.', 'Must be in the IT-managed Power Platform environment \u2014 not the default environment.', 'At Tier 3: full connector review, DLP policy confirmation, and IT environment management required.'] },
-  agentbuilder: { label: 'Copilot Agent Builder', items: ['Confirm agent publishing scope \u2014 personal or named team only. Not org-wide without Tier 3 approval.', 'Document all connectors or plugins enabled in the agent.', 'At Tier 3: IT reviews connector scope and confirms DLP policy coverage before deployment.'] },
-  agent:        { label: 'Copilot Studio', items: ['All M365 connectors and Graph API permissions must be declared at registration.', 'IT configures agent publishing restriction in M365 admin center \u2014 approved users only.', 'At Tier 3: DLP policy review mandatory. Contact Legal or Compliance directly if there are policy questions.'] },
-  custom:       { label: 'Custom code or script', items: ['Source code and dependency manifest must be provided to IT at registration.', 'No hardcoded API keys or credentials in the codebase.', 'At Tier 3: mandatory IT security review and dependency scan. Azure Key Vault required for secrets management.'] },
-  other:        { label: 'Platform not listed', items: ['Contact your BU or SRG IT lead before distributing this app.', 'IT will assess the platform and assign appropriate controls before a tier can be confirmed.'] },
-};
-
-const state = {};
-let platformVal = null;
-
-function buildQuestions() {
-  const container = document.getElementById('questions-container');
-  QUESTIONS.forEach((q, i) => {
-    const div = document.createElement('div');
-    div.className = 'question';
-    div.id = 'q-' + q.id;
-    div.innerHTML = `
-      <div class="q-header">
-        <span class="q-num">${String(i+1).padStart(2,'0')}</span>
-        <span class="q-label">${q.label}</span>
+      <div class="tile" style="--ta:#007AC9;--tib:#e5f3fb;" onclick="window.location.href='RiskAssessment.html'">
+        <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div>
+        <div><div class="t-name">App Risk Assessment</div><div class="t-desc">Score your app against the CenTech governance framework and determine your tier before you build.</div></div>
+        <div class="t-foot"><span class="badge b-live">Live</span><div class="t-arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M9 4l4 4-4 4"/></svg></div></div>
       </div>
-      ${q.hint ? `<div class="q-hint">${q.hint}</div>` : ''}
-      <div class="options" id="opts-${q.id}">
-        ${q.options.map(o => `
-          <button class="opt" data-q="${q.id}" data-val="${o.val}" data-score="${o.score}" onclick="selectOpt(this)">
-            <div class="opt-radio"><div class="opt-radio-inner"></div></div>
-            <div class="opt-body">
-              <div class="opt-text">${o.text}</div>
-              ${o.detail ? `<div class="opt-detail">${o.detail}</div>` : ''}
-            </div>
-            <div class="opt-score">${o.score > 0 ? '+'+o.score : '0'}</div>
-          </button>
-        `).join('')}
-      </div>`;
-    container.appendChild(div);
-  });
 
-  // Platform question — always visible, does not affect score
-  const pdiv = document.createElement('div');
-  pdiv.className = 'question';
-  pdiv.id = 'q-platform';
-  pdiv.innerHTML = `
-    <div class="q-header">
-      <span class="q-num">06</span>
-      <span class="q-label">What platform or tool was used to build this app?</span>
+
+
+      <div class="tile dim" style="--ta:#008566;--tib:#e0f2ec;">
+        <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8M8 8h5M8 16h3"/></svg></div>
+        <div><div class="t-name">App Registration</div><div class="t-desc">Register a new citizen dev app, declare your tier, and provision your Entra group through one guided flow.</div></div>
+        <div class="t-foot"><span class="badge b-next">Up next</span><div class="t-arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M9 4l4 4-4 4"/></svg></div></div>
+      </div>
+
+      <div class="tile dim" style="--ta:#3F859E;--tib:#eaf3f7;">
+        <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="7" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6h1"/><circle cx="17" cy="15" r="3"/><path d="M14 20.7A4 4 0 0121 17"/></svg></div>
+        <div><div class="t-name">App Access Manager</div><div class="t-desc">Add, remove, and review members of your app's Entra security group. Self-service and fully audited.</div></div>
+        <div class="t-foot"><span class="badge b-soon">Coming soon</span><div class="t-arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M9 4l4 4-4 4"/></svg></div></div>
+      </div>
+
+      <div class="tile dim" style="--ta:#007AC9;--tib:#e5f3fb;">
+        <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg></div>
+        <div><div class="t-name">Annual Review</div><div class="t-desc">Complete your yearly self-certification — confirm your app is active, appropriately tiered, and membership is current.</div></div>
+        <div class="t-foot"><span class="badge b-soon">Coming soon</span><div class="t-arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M9 4l4 4-4 4"/></svg></div></div>
+      </div>
+
+      <div class="tile dim" style="--ta:#3F859E;--tib:#eaf3f7;">
+        <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <div><div class="t-name">Ownership Transfer</div><div class="t-desc">Formally hand off your app to a new owner — updates the registry, Entra group, and notifies IT automatically.</div></div>
+        <div class="t-foot"><span class="badge b-soon">Coming soon</span><div class="t-arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M9 4l4 4-4 4"/></svg></div></div>
+      </div>
+
+      <div class="tile dim" style="--ta:#9A9B9C;--tib:#f0f4f6;">
+        <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></div>
+        <div><div class="t-name">Decommission Request</div><div class="t-desc">Retire an app in a governed way — triggers IT cleanup of Azure resources, Entra group, and registry entry.</div></div>
+        <div class="t-foot"><span class="badge b-soon">Coming soon</span><div class="t-arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M9 4l4 4-4 4"/></svg></div></div>
+      </div>
+
     </div>
-    <div class="q-hint">Determines platform-specific controls only. Does not affect your tier score.</div>
-    <div class="options">
-      ${Object.entries(PLATFORM_CONTROLS).map(([val, p]) => `
-        <button class="opt" onclick="selectPlatform('${val}')">
-          <div class="opt-radio"><div class="opt-radio-inner"></div></div>
-          <div class="opt-body"><div class="opt-text">${p.label}</div></div>
-          <div class="opt-score">controls</div>
-        </button>`).join('')}
-    </div>`;
-  container.appendChild(pdiv);
-}
 
-function selectOpt(btn) {
-  const q = btn.dataset.q;
-  const val = btn.dataset.val;
-  const score = parseInt(btn.dataset.score);
-  const opt = QUESTIONS.find(x => x.id === q)?.options.find(o => o.val === val);
-  const isFlag = opt?.flag;
-  document.querySelectorAll(`[data-q="${q}"]`).forEach(b => b.classList.remove('sel', 'flag-sel'));
-  btn.classList.add(isFlag ? 'flag-sel' : 'sel');
-  document.getElementById('q-' + q).classList.add('answered');
-  state[q] = { val, score, flag: isFlag, itreview: opt?.itreview };
-  const answered = Object.keys(state).length;
-  document.getElementById('q-count').textContent = `${answered} of 6 answered`;
-  document.getElementById('progress-fill').style.width = `${(answered/6)*100}%`;
-  renderResult();
-}
+    <!-- IT governance tools: hidden for V1. To enable, change style to display:block -->
+    <div id="it-governance-section" style="display:none;">
+    <div class="sh sh-gap">IT &amp; governance tools</div>
+    <div class="grid">
 
-function calcTier() {
-  if (Object.keys(state).length === 0) return null;
-  let score = 0;
-  for (const k in state) score += state[k].score;
-  const hasFlag = HARD_FLAGS.some(f => state[f.q] && state[f.q].val === f.val);
-  if (hasFlag) return { tier: 3, score, forced: true };
-  if (score <= 2) return { tier: 1, score, forced: false };
-  if (score <= 6) return { tier: 2, score, forced: false };
-  return { tier: 3, score, forced: false };
-}
+      <div class="tile dim" style="--ta:#3DB7E4;--tib:#e5f8fd;">
+        <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-6"/></svg></div>
+        <div><div class="t-name">IT Review Dashboard</div><div class="t-desc">Live view of all registered apps, tiers, review dates, and compliance status for CenTech and BU IT leads.</div></div>
+        <div class="t-foot"><span class="badge b-it">IT / CenTech</span><div class="t-arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M9 4l4 4-4 4"/></svg></div></div>
+      </div>
 
-function getDerived(tier) {
-  const audVal = state.audience?.val;
-  const suppVal = state.support?.val;
-  const intVal = state.integration?.val;
-  const summaries = {
-    1: 'Self-governed by the maker. No IT approval required. App stays within a group of 5 — sharing beyond that triggers a mandatory re-assessment. No hosted URL permitted.',
-    2: `Lightweight IT registration required before sharing${audVal === '2' ? ' with your named team' : ' with your group'}. ${suppVal === '2' ? 'Owner and team self-support — no formal SLA.' : 'Self-supported by the maker.'} Distribution via direct share only — no firm-wide publishing without re-tiering.`,
-    3: `Full IT approval chain required — manager sponsor, IT review, and Compliance sign-off where applicable. App hosted on Azure Static Web App provisioned by IT with Easy Auth enforced. IT deploys all updates — owner does not distribute files directly to end users. 5-business-day support response SLA.`,
-  };
-  return { summary: summaries[tier] };
-}
+      <div class="tile dim" style="--ta:#008566;--tib:#e0f2ec;">
+        <div class="t-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div><div class="t-name">DLP Compliance Checker</div><div class="t-desc">Declare your app's connectors and external calls. Flags anything requiring IT review before your registration is submitted.</div></div>
+        <div class="t-foot"><span class="badge b-soon">Coming soon</span><div class="t-arr"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M9 4l4 4-4 4"/></svg></div></div>
+      </div>
 
-function raciGroup(label, color, bg, border, items) {
-  if (!items || !items.length) return '';
-  const rows = items.map(i => `<div class="raci-item"><div class="raci-phase" style="color:${color};background:${bg};border:1px solid ${border}">${i.phase || '\u2014'}</div><div class="raci-text">${i.text}</div></div>`).join('');
-  return `<div class="raci-group"><div class="raci-group-header" style="background:${bg};border-left:3px solid ${color}"><span class="raci-group-label" style="color:${color}">${label}</span></div><div class="raci-group-body">${rows}</div></div>`;
-}
-
-function renderResult() {
-  const result = calcTier();
-  if (!result) return;
-  const { tier, score, forced } = result;
-  const t = TIERS[tier];
-  const answered = Object.keys(state).length;
-  const maxScore = QUESTIONS.reduce((s, q) => s + Math.max(...q.options.map(o => o.score)), 0);
-  const pct = Math.min(100, Math.round((score / maxScore) * 100));
-  const flags = HARD_FLAGS.filter(f => state[f.q] && state[f.q].val === f.val);
-  const itReviews = IT_REVIEW_TRIGGERS.filter(t => state[t.q] && state[t.q].val === t.val);
-  const segColors = ['#0F6E56','#185FA5','#534AB7'];
-  const segs = [1,2,3].map(i => `<div class="meter-seg" style="background:${i <= tier ? segColors[i-1] : '#e0e7ef'}"></div>`).join('');
-  const flagHtml = flags.map(f => `<div class="flag-item animate-in"><div class="flag-title">${f.label}</div><div class="flag-text">${f.text}</div></div>`).join('');
-  const itHtml = itReviews.map(t => `<div class="it-review-item animate-in"><div class="flag-title">IT Review Required</div><div class="flag-text">${t.text}</div></div>`).join('');
-
-  document.getElementById('score-body').innerHTML = `
-    <div class="tier-badge animate-in" style="background:${t.bg};border-color:${t.border};color:${t.color}">
-      <div class="tier-badge-label" style="color:${t.color}">${t.label}</div>
-      <div class="tier-badge-name" style="color:${t.color}">${t.name}</div>
-      <div class="tier-badge-desc" style="color:${t.color}">${t.desc}</div>
     </div>
-    ${flags.length ? `<div class="flags-section">${flagHtml}</div>` : ''}
-    ${itHtml}
-    <div class="meter-wrap">
-      <div class="meter-label"><span>Risk score</span><span style="font-family:var(--mono);font-weight:500">${score} / ${maxScore} pts</span></div>
-      <div class="meter-track"><div class="meter-fill" style="width:${pct}%;background:${t.color}"></div></div>
-      <div class="meter-segs">${segs}</div>
+  </div>
+  </div>
+
+  <div class="panel" id="p-process">
+<div class="sh" style="margin-top:4px;">From idea to governed app</div>
+    <div class="process-box">
+      <h3>Four steps every citizen dev app goes through</h3>
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-n">1</div>
+          <div class="step-name">Assess</div>
+          <div class="step-desc">Run the Risk Assessment tool to understand your app's risk profile — data sensitivity, user scope, platform, connectivity, and output use. IT uses this as the basis for tier assignment.</div>
+        </div>
+
+        <div class="step" style="opacity:0.5;">
+          <div class="step-n" style="background:var(--gray);">2</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div class="step-name" style="margin-bottom:0;">Register</div>
+            <span class="badge b-soon" style="font-size:9px;">Coming soon</span>
+          </div>
+          <div class="step-desc">Submit your app registration request. IT reviews it, runs the risk assessment with you if needed, and confirms your governance tier. You receive an Entra security group on approval.</div>
+        </div>
+
+        <div class="step" style="opacity:0.5;">
+          <div class="step-n" style="background:var(--gray);">3</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div class="step-name" style="margin-bottom:0;">Build &amp; deploy</div>
+            <span class="badge b-soon" style="font-size:9px;">Coming soon</span>
+          </div>
+          <div class="step-desc">Build your app within the approved platform controls for your tier. Upload the file to the designated SharePoint library. IT reviews, commits to the GitHub repo, and deploys to Azure. You own the app — IT owns the infrastructure.</div>
+        </div>
+
+        <div class="step" style="opacity:0.5;">
+          <div class="step-n" style="background:var(--gray);">4</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:nowrap;">
+            <div class="step-name" style="margin-bottom:0;white-space:nowrap;">Manage &amp; maintain</div>
+            <span class="badge b-soon" style="font-size:9px;flex-shrink:0;">Coming soon</span>
+          </div>
+          <div class="step-desc">Manage your app's Entra group membership to control who has access. Complete the annual self-review each January. If your app's scope grows, re-run the assessment. Transfer ownership or decommission through the hub when the lifecycle ends.</div>
+        </div>
+
+      </div>
     </div>
-    ${answered < 6 ? `<div style="font-size:11px;color:var(--gray);text-align:center;padding:4px 0;font-weight:300">${6 - answered} question${6-answered>1?'s':''} remaining \u2014 tier may adjust</div>` : ''}`;
 
-  if (answered > 0) {
-    const derived = getDerived(tier);
-    const raci = RACI[tier];
-    const platform = platformVal ? PLATFORM_CONTROLS[platformVal] : null;
-    const toolBanner = platform ? `<div class="raci-tool-banner">${platform.label} \u2014 platform-specific controls</div>${platform.items.map(c => `<div class="raci-item"><div class="raci-phase" style="color:var(--amber);background:var(--amber-bg);border:1px solid var(--amber-border)">Control</div><div class="raci-text">${c}</div></div>`).join('')}` : '';
+    <div class="sh sh-gap">Governance tiers at a glance</div>
+    <div class="tier-wrap">
+      <table>
+        <thead>
+          <tr><th>Tier</th><th>Typical apps</th><th>Users</th><th>Hosting</th><th>IT review</th><th>Owner SLA</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tp t1">T1</span></td>
+            <td>Personal productivity, LLM-generated tools, single-user scripts</td>
+            <td>1-5</td>
+            <td>Self-hosted or local</td>
+            <td>None — acceptable use acknowledgment only</td>
+            <td>Self-governed under acceptable use policy</td>
+          </tr>
+          <tr>
+            <td><span class="tp t2">T2</span></td>
+            <td>Team tools, shared trackers, small-scope automations</td>
+            <td>6-20</td>
+            <td>M365 / SharePoint</td>
+            <td>BU IT lead sign-off within 5 business days</td>
+            <td>Respond within 5 business days, annual review</td>
+          </tr>
+          <tr>
+            <td><span class="tp t3">T3</span></td>
+            <td>Department-wide apps, client-adjacent tools, restricted or confidential data</td>
+            <td>20+</td>
+            <td>CenTech Azure — IT-provisioned Static Web App</td>
+            <td>IT + Compliance review within 10 business days</td>
+            <td>Full owner obligations, 5-day support SLA, annual review</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-    document.getElementById('controls-body').innerHTML =
-      `<div class="raci-derived" style="padding:12px 14px;font-size:12.5px;line-height:1.6;color:var(--charcoal);border:1px solid #e0e7ef;border-radius:7px;margin-bottom:16px;">${derived.summary}</div>` +
-      raciGroup('App Owner Responsibilities', '#085041', '#E1F5EE', '#5DCAA5', raci.owner) +
-      raciGroup('IT Responsibilities', '#0C447C', '#E6F1FB', '#85B7EB', raci.it) +
-      (tier === 3 ? raciGroup('Compliance Responsibilities', '#791F1F', '#FCEBEB', '#F09595', raci.compliance) : '') +
-      toolBanner;
+  <div class="panel" id="p-faq">
+<div class="sh" style="margin-top:4px;">Frequently asked questions</div>
+    <div class="faq">
 
+      <div class="faq-item" onclick="faq(this)">
+        <div class="faq-q">Do I need to register if I am just using an AI tool for my own work?<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6l4 4 4-4"/></svg></div>
+        <div class="faq-a">No. Personal productivity use of approved AI tools -- Microsoft Copilot, approved Claude interfaces -- does not require registration. Registration applies when you build something others will use: an app, automation, or tool with multiple users or business impact.</div>
+      </div>
 
+      <div class="faq-item" onclick="faq(this)">
+        <div class="faq-q">What platforms are approved for citizen development?<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6l4 4 4-4"/></svg></div>
+        <div class="faq-a">Currently approved: LLM-generated HTML apps, Power Apps, Power Automate, Copilot Studio / Agent Builder (with additional IT review), and SharePoint-hosted tools. Custom code or scripts that require IT to maintain the codebase are not citizen dev -- those are Lane 5 IT development requests. If your platform is not listed, contact your BU IT lead before building.</div>
+      </div>
 
-    const badge = document.getElementById('controls-tier-badge');
-    badge.textContent = t.label;
-    badge.style.cssText = `background:${t.bg};color:${t.color};border:1px solid ${t.border};font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px`;
-    document.getElementById('controls-card').style.display = 'block';
-    document.getElementById('actions-card').style.display = answered >= 3 ? 'block' : 'none';
+      <div class="faq-item" onclick="faq(this)">
+        <div class="faq-q">What is Lane 5 and how is it different from citizen dev?<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6l4 4 4-4"/></svg></div>
+        <div class="faq-a">Lane 5 is a formal IT development request where IT owns and maintains the codebase. Citizen dev apps are built and maintained by the owner -- IT provides infrastructure and governance, not development. If users expect IT to fix bugs or build new features, submit a Lane 5 request through your BU or SRG IT lead instead.</div>
+      </div>
+
+      <div class="faq-item" onclick="faq(this)">
+        <div class="faq-q">Who determines my governance tier?<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6l4 4 4-4"/></svg></div>
+        <div class="faq-a">IT determines your tier after reviewing your registration request. You can run the Risk Assessment tool yourself to get a sense of where your app will land, but IT's determination is final. IT may run the assessment together with you as part of the review conversation before confirming the tier.</div>
+      </div>
+
+      <div class="faq-item" onclick="faq(this)">
+        <div class="faq-q">Who reviews my registration and how long does it take?<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6l4 4 4-4"/></svg></div>
+        <div class="faq-a">Your BU or SRG IT lead reviews all registration requests. Tier 2 apps are approved within 5 business days. Tier 3 apps are also reviewed by CenTech for infrastructure provisioning and by Compliance if client data or regulated workflows are involved -- allow up to 10 business days. You will receive updates by email throughout the process.</div>
+      </div>
+
+      <div class="faq-item" onclick="faq(this)">
+        <div class="faq-q">What does IT provide for Tier 3 apps vs what I am responsible for?<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6l4 4 4-4"/></svg></div>
+        <div class="faq-a">IT owns the infrastructure -- Azure Static Web App, Easy Auth, Entra group provisioning, GitHub deployment, and hosting. You own the app -- its content, logic, updates, and user access management. You are responsible for responding to issues within 5 business days and completing the annual self-review each January.</div>
+      </div>
+
+      <div class="faq-item" onclick="faq(this)">
+        <div class="faq-q">Can my app connect to external APIs or non-Microsoft data sources?<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6l4 4 4-4"/></svg></div>
+        <div class="faq-a">External connectivity increases your risk score and typically requires Tier 3. All external API connections must be declared in your registration request. IT will confirm whether the connection is approved during their review. Approved MCP servers provided by IT are an alternative to direct external connections for some use cases.</div>
+      </div>
+
+      <div class="faq-item" onclick="faq(this)">
+        <div class="faq-q">Where is my app tracked after approval?<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6l4 4 4-4"/></svg></div>
+        <div class="faq-a">All registered apps are tracked in the CenTech citizen dev SharePoint registry -- the system of record for ownership, tier, review dates, and compliance status. IT leads and CenTech engineers use this for governance, annual review planning, and provisioning decisions.</div>
+      </div>
+
+      <div class="faq-item" onclick="faq(this)">
+        <div class="faq-q">What happens if my app's scope grows after registration?<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6l4 4 4-4"/></svg></div>
+        <div class="faq-a">Re-run the Risk Assessment and contact your BU IT lead to discuss re-tiering. The new tier's controls and review requirements apply from that point. You will not lose access to your app during the review unless a compliance issue is identified.
+  </div>
+
+  </div>
+  </div>
+  </div>
+
+</div><!-- /.page -->
+
+<footer>
+  <div class="fl"><strong>William Blair</strong> &middot; CenTech Citizen Development Program</div>
+</footer>
+
+<script>
+
+// -- User identity --
+// Reads the signed-in user from Azure Easy Auth on page load.
+// Falls back to mock data when running locally or in demo mode.
+var AZURE_DOMAINS = ['.azurestaticapps.net', '.williamblair.com', '.williamblairco.com'];
+var IS_AZURE = AZURE_DOMAINS.some(function(d) { return window.location.hostname.endsWith(d); });
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (IS_AZURE) {
+    fetch('/.auth/me')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        var principal = data.clientPrincipal;
+        if (!principal) return;
+        var nameClaim = principal.claims.filter(function(c) { return c.typ === 'name'; })[0];
+        var name     = (nameClaim && nameClaim.val) || principal.userDetails || '';
+        var parts    = name.trim().split(' ');
+        var initials = ((parts[0] || ' ')[0] + ((parts[parts.length - 1] || ' ')[0])).toUpperCase();
+        var nameEl   = document.getElementById('header-username');
+        var avEl     = document.getElementById('header-avatar');
+        if (nameEl) nameEl.textContent = name;
+        if (avEl)   avEl.textContent   = initials;
+      })
+      .catch(function() {
+        // Silent fail - keep mock values
+      });
   }
+  // Local/demo mode: name and initials stay as hardcoded mock values in HTML
+});
+
+// -- Tab switching --
+function show(id, el) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('on'); });
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('on'); });
+  document.getElementById('p-' + id).classList.add('on');
+  el.classList.add('on');
 }
 
-function selectPlatform(val) {
-  platformVal = val;
-  document.querySelectorAll('#q-platform .opt').forEach(b => {
-    const isSelected = b.getAttribute('onclick') === `selectPlatform('${val}')`;
-    b.classList.toggle('sel', isSelected);
-    const inner = b.querySelector('.opt-radio-inner');
-    if (inner) inner.style.background = isSelected ? 'var(--blue)' : 'transparent';
-    const radio = b.querySelector('.opt-radio');
-    if (radio) radio.style.borderColor = isSelected ? 'var(--blue)' : '#c5d2dc';
-  });
-  document.getElementById('q-platform').classList.add('answered');
-  const answered = Object.keys(state).length + (platformVal ? 1 : 0);
-  document.getElementById('q-count').textContent = `${answered} of 6 answered`;
-  document.getElementById('progress-fill').style.width = `${(answered/6)*100}%`;
-  renderResult();
+// -- Tile navigation --
+function nav(name) { toast('Opening ' + name + '...'); }
+
+// -- Toast --
+var _tt;
+function toast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(function() { t.classList.remove('show'); }, 2400);
 }
 
-function printReport() { window.print(); }
-
-function copyResults() {
-  const result = calcTier();
-  if (!result) return;
-  const { tier, score } = result;
-  const t = TIERS[tier];
-  const flags = HARD_FLAGS.filter(f => state[f.q] && state[f.q].val === f.val);
-  const maxScore = QUESTIONS.reduce((s, q) => s + Math.max(...q.options.map(o => o.score)), 0);
-  let text = `William Blair \u2014 Citizen Developer App Risk Assessment\n==========================================\nResult: ${t.label} \u2014 ${t.name}\nRisk Score: ${score} / ${maxScore} points\n`;
-  if (flags.length) text += `Hard Overrides: ${flags.map(f => f.label).join('; ')}\n`;
-  text += `\n${t.desc}\n\nAnswers:\n`;
-  QUESTIONS.forEach(q => { if (state[q.id]) { const opt = q.options.find(o => o.val === state[q.id].val); text += `  ${q.label}\n  \u2192 ${opt.text}\n`; } });
-  if (platformVal && PLATFORM_CONTROLS[platformVal]) text += `  Platform: ${PLATFORM_CONTROLS[platformVal].label}\n`;
-  const derived = getDerived(tier);
-  text += `\nWhat This Means:\n  ${derived.summary}\n`;
-  navigator.clipboard.writeText(text).then(() => { const btn = document.querySelector('.btn-secondary'); const orig = btn.textContent; btn.textContent = 'Copied to clipboard'; setTimeout(() => { btn.textContent = orig; }, 2000); });
+// -- FAQ accordion --
+function faq(el) {
+  var open = el.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(function(f) { f.classList.remove('open'); });
+  if (!open) el.classList.add('open');
 }
 
-function resetAll() {
-  Object.keys(state).forEach(k => delete state[k]);
-  platformVal = null;
-  document.querySelectorAll('.opt').forEach(b => b.classList.remove('sel', 'flag-sel'));
-  document.querySelectorAll('.question').forEach(q => q.classList.remove('answered'));
-  const pq = document.getElementById('q-platform');
-  if (pq) pq.remove();
-  document.getElementById('score-body').innerHTML = '<div class="score-empty">Answer the questions on the left to see your tier assignment.</div>';
-  document.getElementById('controls-card').style.display = 'none';
-  document.getElementById('actions-card').style.display = 'none';
-  document.getElementById('q-count').textContent = '0 of 6 answered';
-  document.getElementById('progress-fill').style.width = '0%';
-}
-
-buildQuestions();
 </script>
+
 </body>
 </html>
